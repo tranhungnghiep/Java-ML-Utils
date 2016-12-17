@@ -36,7 +36,7 @@ import weka.core.tokenizers.WordTokenizer;
  */
 public class TextPreprocessUtility {
 
-    public static StanfordCoreNLP pipeline = null;
+    public static StanfordCoreNLP pipelineStanfordCoreNLP = null;
 
     /**
      * Remove stop-words and do stemming, and then out to TXT file
@@ -218,18 +218,18 @@ public class TextPreprocessUtility {
         ArrayList<String> result = new ArrayList();
 
         // StanfordCoreNLP loads a lot of models, so you probably only want to do this once per execution
-        if (pipeline == null) {
+        if (pipelineStanfordCoreNLP == null) {
             // Create StanfordCoreNLP object properties, with POS tagging (required for lemmatization), and lemmatization
             Properties props = new Properties();
             props.put("annotators", "tokenize, ssplit, pos, lemma");
-            pipeline = new StanfordCoreNLP(props);
+            pipelineStanfordCoreNLP = new StanfordCoreNLP(props);
         }
 
         // create an empty Annotation just with the given text
         Annotation document = new Annotation(input);
 
         // run all Annotators on this text
-        pipeline.annotate(document);
+        pipelineStanfordCoreNLP.annotate(document);
 
         // Iterate over all of the sentences found
         List<CoreMap> sentences = document.get(SentencesAnnotation.class);
