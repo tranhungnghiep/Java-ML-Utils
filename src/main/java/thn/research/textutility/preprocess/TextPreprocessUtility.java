@@ -250,13 +250,11 @@ public class TextPreprocessUtility {
      * @param args
      */
     public static void main(String[] args) {
-        String dirPath = "";
+        String dirPath = "E:\\NghiepTH Working\\Data\\PTM\\MAS";
         String heading = "1182744\n";
         try {
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_removedSW.txt", heading, false, true, false, false);
-            TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_removedSWandStem.txt", heading, false, true, true, false);
+                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_lemma.txt", heading, true, true, false, true);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
