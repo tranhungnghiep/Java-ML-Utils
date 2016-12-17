@@ -255,6 +255,10 @@ public class TextPreprocessUtility {
         try {
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
                     dirPath + File.separator + "MAS_doc_lowercase_removedSW_lemma.txt", heading, true, true, false, true);
+            TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
+                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_stem.txt", heading, true, true, true, false);
+            TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
+                    dirPath + File.separator + "MAS_doc_lowercase_removedSW.txt", heading, true, true, false, false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
