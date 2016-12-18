@@ -73,6 +73,7 @@ public class TextPreprocessUtility {
                 if (line.isEmpty()) {
                     continue;
                 }
+                line = line.replace("\\", "");
 
                 if (isLemma) {
                     // Stanford Lemma may use case information to segment sentence and POS tag: 
@@ -167,8 +168,12 @@ public class TextPreprocessUtility {
         String delimiters = " \r\t\n.,;:\'\"()?!-><#$\\%&*+/@^_=[]{}|`~0123456789·‘’“”\\«ª©¯¬£¢§™•ϵϕ­ ´";
         wordTokenizer.setDelimiters(delimiters);
         wordTokenizer.tokenize(input);
+        String token;
         while (wordTokenizer.hasMoreElements()) {
-            result.add(wordTokenizer.nextElement());
+            token = wordTokenizer.nextElement();
+            if (token.length() > 1) {
+                result.add(token);
+            }
         }
         return result;
     }
