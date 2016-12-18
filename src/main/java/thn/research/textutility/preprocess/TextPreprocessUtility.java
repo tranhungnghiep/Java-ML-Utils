@@ -73,7 +73,6 @@ public class TextPreprocessUtility {
                 if (line.isEmpty()) {
                     continue;
                 }
-                line = line.replace("\\", "");
 
                 if (isLemma) {
                     // Stanford Lemma may use case information to segment sentence and POS tag: 
