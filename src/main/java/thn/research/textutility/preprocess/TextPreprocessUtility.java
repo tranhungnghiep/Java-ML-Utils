@@ -103,6 +103,7 @@ public class TextPreprocessUtility {
 
                 // Write each line with buffered writer, to avoid writing very large file at once.
                 writer.write(strBuilder.toString());
+                strBuilder.setLength(0);
             }
         }
     }
@@ -213,6 +214,7 @@ public class TextPreprocessUtility {
 
     /**
      * Lemmatizing using Stanford CORE NLP.
+     * For CoreNLP manual, see http://stanfordnlp.github.io/CoreNLP/download.html
      *
      * @param input
      * @return
