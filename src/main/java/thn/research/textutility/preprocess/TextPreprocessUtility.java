@@ -181,7 +181,7 @@ public class TextPreprocessUtility {
         String token;
         while (wordTokenizer.hasMoreElements()) {
             token = wordTokenizer.nextElement();
-//            if (Arrays.asList("lrb", "rrb", "lsb", "rsb", "lcb", "rcb").contains(token)) { // Post process lemma.
+//            if (Arrays.asList("lrb", "rrb", "lsb", "rsb", "lcb", "rcb").contains(token.toLowerCase())) { // Post process lemma.
 //                continue;
 //            }
             if (token.length() > 1) {
