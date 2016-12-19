@@ -75,8 +75,8 @@ public class TextPreprocessUtility {
                 }
 
                 if (isLemma) {
-                    // Stanford Lemma may use case information to segment sentence and POS tag: 
-                    // Do lemma first, before lower case. This also tokenizes.
+                    // Stanford Lemma may use case information to segment sentence and POS tag: Do lemma first. This also tokenizes.
+                    // Lemma keep case, keep punctuation mark. Need to process these later.
                     wordList = lemma(line);
                 } else {
                     wordList = tokenize(line);
@@ -252,6 +252,7 @@ public class TextPreprocessUtility {
 
     /**
      * Test.
+     * Lemmatization is very slow (˜hours). Others are very fast (˜minutes).
      *
      * @param args
      */
@@ -260,11 +261,11 @@ public class TextPreprocessUtility {
         String heading = "1182744\n";
         try {
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_lemma.txt", heading, true, true, false, true);
+                    dirPath + File.separator + "MAS_doc_lowercase_removedSW.txt", heading, true, true, false, false);
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
                     dirPath + File.separator + "MAS_doc_lowercase_removedSW_stem.txt", heading, true, true, true, false);
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_lowercase_removedSW.txt", heading, true, true, false, false);
+                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_lemma.txt", heading, true, true, false, true);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
