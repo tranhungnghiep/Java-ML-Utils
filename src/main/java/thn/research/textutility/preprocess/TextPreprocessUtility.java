@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -70,7 +71,7 @@ public class TextPreprocessUtility {
             }
 
             String line;
-//            reader.readLine(); // Bypass first line, use when preprocess again.
+//            reader.readLine(); // Bypass first line, use when post process lemma.
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) {
                     continue;
@@ -180,6 +181,9 @@ public class TextPreprocessUtility {
         String token;
         while (wordTokenizer.hasMoreElements()) {
             token = wordTokenizer.nextElement();
+//            if (Arrays.asList("lrb", "rrb", "lsb", "rsb", "lcb", "rcb").contains(token)) { // Post process lemma.
+//                continue;
+//            }
             if (token.length() > 1) {
                 result.add(token);
             }
@@ -318,7 +322,7 @@ public class TextPreprocessUtility {
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
                     dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_lemma.txt", heading, true, true, true, false, true);
 //            TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc_simpleToken_lowercase_removedSW_lemma.txt",
-//                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_lemma.txt", heading, true, false, false, false, false); // Process again.
+//                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_lemma.txt", heading, true, false, false, false, false); // Post process lemma.
         } catch (Exception ex) {
             ex.printStackTrace();
         }
