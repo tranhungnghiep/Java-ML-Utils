@@ -44,16 +44,17 @@ public class TextPreprocessUtility {
      * @param filePathInput
      * @param filePathOutput
      * @param heading
+     * @param isCleanToken
      * @param isLower
      * @param isNoStop
      * @param isStem
      * @param isLemma
      * @throws Exception
      */
-    private static void preprocess(String filePathInput, String filePathOutput,
-            String heading, boolean isLower, boolean isNoStop, boolean isStem, boolean isLemma) throws Exception {
+    public static void preprocess(String filePathInput, String filePathOutput,
+            String heading, boolean isCleanToken, boolean isLower, boolean isNoStop, boolean isStem, boolean isLemma) throws Exception {
         ArrayList<String> wordList;
-        StringBuilder strBuilder = new StringBuilder();
+        StringBuilder preprocessedLine = new StringBuilder();
 
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
@@ -69,41 +70,41 @@ public class TextPreprocessUtility {
             }
 
             String line;
+//            reader.readLine(); // Bypass first line, use when preprocess again.
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) {
                     continue;
                 }
 
                 if (isLemma) {
-                    // Stanford Lemma may use case information to segment sentence and POS tag: Do lemma first. This also tokenizes.
-                    // Lemma keep case, keep punctuation mark. Need to process these later.
-                    wordList = lemma(line);
-                } else {
-                    wordList = tokenize(line);
+                    // Stanford Lemma use case information, punctuation, stopwords to segment sentence and POS tag: Do lemma first and return the line.
+                    // This also tokenizes, but not clean. Lemma keep case, keep punctuation mark, keep stopwords. Need to check to process these later.
+                    line = lemmaLine(line);
                 }
 
                 if (isLower) {
-                    ArrayList<String> lowerWordList = new ArrayList();
-                    for (String word : wordList) {
-                        lowerWordList.add(word.toLowerCase());
-                    }
-                    wordList = lowerWordList;
+                    line = line.toLowerCase();
                 }
+
+                // Always tokenize, even when not lemma, lower, nostop, stem.
+                wordList = tokenize(line, isCleanToken);
+
                 if (isNoStop) {
                     wordList = removeStopword(wordList);
                 }
+
                 if (isStem) {
                     wordList = stem(wordList);
                 }
 
                 for (String word : wordList) {
-                    strBuilder.append(word).append(" ");
+                    preprocessedLine.append(word).append(" ");
                 }
-                strBuilder.append("\n");
+                preprocessedLine.append("\n");
 
                 // Write each line with buffered writer, to avoid writing very large file at once.
-                writer.write(strBuilder.toString());
-                strBuilder.setLength(0);
+                writer.write(preprocessedLine.toString());
+                preprocessedLine.setLength(0);
             }
         }
     }
@@ -116,6 +117,7 @@ public class TextPreprocessUtility {
      * @param extensions: e.g., Arrays.asList(".txt", ".dat").
      * @param overwrite
      * @param heading
+     * @param isCleanToken
      * @param isLower
      * @param isNoStop
      * @param isStem
@@ -123,7 +125,7 @@ public class TextPreprocessUtility {
      * @throws Exception
      */
     public static void parallelPreprocess(String rootPathInput, String rootPathOutput, List<String> extensions, boolean overwrite,
-            final String heading, final boolean isLower, final boolean isNoStop, final boolean isStem, final boolean isLemma) throws Exception {
+            final String heading, final boolean isCleanToken, final boolean isLower, final boolean isNoStop, final boolean isStem, final boolean isLemma) throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(GeneralUtility.getNumOfCore() - 1);
 
         File rootOutput = new File(rootPathOutput);
@@ -142,7 +144,7 @@ public class TextPreprocessUtility {
             final String filePathOutput = filePathInput.replace(rootPathInput, rootPathOutput);
             executor.submit(() -> {
                 try {
-                    preprocess(filePathInput, filePathOutput, heading, isLower, isNoStop, isStem, isLemma);
+                    preprocess(filePathInput, filePathOutput, heading, isCleanToken, isLower, isNoStop, isStem, isLemma);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -158,15 +160,22 @@ public class TextPreprocessUtility {
      * Tokenize.
      *
      * @param input
+     * @param isCleanToken: true: clean all punctuation, false: only split by
+     * visible space.
      * @return
      * @throws Exception
      */
-    public static ArrayList<String> tokenize(String input) throws Exception {
+    public static ArrayList<String> tokenize(String input, boolean isCleanToken) throws Exception {
         ArrayList<String> result = new ArrayList();
 
         WordTokenizer wordTokenizer = new WordTokenizer();
-        String delimiters = " \r\t\n.,;:\'\"()?!-><#$\\%&*+/@^_=[]{}|`~0123456789·‘’“”\\«ª©¯¬£¢§™•ϵϕ­ ´";
-        wordTokenizer.setDelimiters(delimiters);
+        if (isCleanToken) {
+            String cleanDelimiters = " \r\t\n.,;:\'\"()?!-><#$\\%&*+/@^_=[]{}|`~0123456789·‘’“”\\«ª©¯¬£¢§™•ϵϕ­ ´";
+            wordTokenizer.setDelimiters(cleanDelimiters);
+        } else {
+            String simpleDelimiters = " \r\t\n";
+            wordTokenizer.setDelimiters(simpleDelimiters);
+        }
         wordTokenizer.tokenize(input);
         String token;
         while (wordTokenizer.hasMoreElements()) {
@@ -213,11 +222,11 @@ public class TextPreprocessUtility {
     }
 
     /**
-     * Lemmatizing using Stanford CORE NLP.
-     * For CoreNLP manual, see http://stanfordnlp.github.io/CoreNLP/download.html
+     * Lemmatizing using Stanford CORE NLP. For CoreNLP manual, see
+     * http://stanfordnlp.github.io/CoreNLP/download.html
      *
      * @param input
-     * @return
+     * @return A list of lemmatized tokens.
      * @throws Exception
      */
     public static ArrayList<String> lemma(String input) throws Exception {
@@ -251,8 +260,50 @@ public class TextPreprocessUtility {
     }
 
     /**
-     * Test.
-     * Lemmatization is very slow (˜hours). Others are very fast (˜minutes).
+     * Lemmatizing using Stanford CORE NLP. For CoreNLP manual, see
+     * http://stanfordnlp.github.io/CoreNLP/download.html
+     *
+     * @param input
+     * @return A lemmatized string.
+     * @throws Exception
+     */
+    public static String lemmaLine(String input) throws Exception {
+        ArrayList<String> wordList = new ArrayList();
+
+        // StanfordCoreNLP loads a lot of models, so you probably only want to do this once per execution
+        if (pipelineStanfordCoreNLP == null) {
+            // Create StanfordCoreNLP object properties, with POS tagging (required for lemmatization), and lemmatization
+            Properties props = new Properties();
+            props.put("annotators", "tokenize, ssplit, pos, lemma");
+            pipelineStanfordCoreNLP = new StanfordCoreNLP(props);
+        }
+
+        // create an empty Annotation just with the given text
+        Annotation document = new Annotation(input);
+
+        // run all Annotators on this text
+        pipelineStanfordCoreNLP.annotate(document);
+
+        // Iterate over all of the sentences found
+        List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            // Iterate over all tokens in a sentence
+            for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
+                // Retrieve and add the lemma for each word into the list of lemmas
+                wordList.add(token.get(LemmaAnnotation.class));
+            }
+        }
+
+        StringBuilder lemmaLine = new StringBuilder();
+        for (String word : wordList) {
+            lemmaLine.append(word);
+        }
+        
+        return lemmaLine.toString();
+    }
+
+    /**
+     * Test. Lemmatization is very slow (˜hours). Others are very fast (˜minutes).
      *
      * @param args
      */
@@ -261,11 +312,13 @@ public class TextPreprocessUtility {
         String heading = "1182744\n";
         try {
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_lowercase_removedSW.txt", heading, true, true, false, false);
+                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW.txt", heading, true, true, true, false, false);
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_stem.txt", heading, true, true, true, false);
+                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_stem.txt", heading, true, true, true, true, false);
             TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc.txt",
-                    dirPath + File.separator + "MAS_doc_lowercase_removedSW_lemma.txt", heading, true, true, false, true);
+                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_lemma.txt", heading, true, true, true, false, true);
+//            TextPreprocessUtility.preprocess(dirPath + File.separator + "MAS_doc_simpleToken_lowercase_removedSW_lemma.txt",
+//                    dirPath + File.separator + "MAS_doc_cleanToken_lowercase_removedSW_lemma.txt", heading, true, false, false, false, false); // Process again.
         } catch (Exception ex) {
             ex.printStackTrace();
         }
