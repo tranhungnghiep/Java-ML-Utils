@@ -1,2 +1,2 @@
 ## License
-MIT
+GNU GPL 3.0
