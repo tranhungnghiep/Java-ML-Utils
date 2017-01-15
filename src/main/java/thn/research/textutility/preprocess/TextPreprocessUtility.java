@@ -19,14 +19,13 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.io.FileUtils;
 import thn.research.textutility.general.GeneralUtility;
-import thn.research.textutility.io.TextFileUtility;
+import thn.research.textutility.io.FileUtility;
 import weka.core.Stopwords;
 import weka.core.stemmers.IteratedLovinsStemmer;
 import weka.core.tokenizers.WordTokenizer;
@@ -64,7 +63,7 @@ public class TextPreprocessUtility {
                         new OutputStreamWriter(
                                 new FileOutputStream(filePathOutput, true), "UTF-8"));) {
 
-            TextFileUtility.checkAndCreateParentDirs(filePathOutput);
+            FileUtility.checkToCreateParentDir(filePathOutput);
 
             if (heading != null && !heading.isEmpty()) {
                 writer.write(heading);
@@ -138,7 +137,7 @@ public class TextPreprocessUtility {
             }
         }
 
-        List<String> listFilePaths = TextFileUtility.getAllFilePaths(rootPathInput, extensions);
+        List<String> listFilePaths = FileUtility.getAllFilePaths(rootPathInput, extensions);
 
         for (int i = 0; i < listFilePaths.size(); i++) {
             final String filePathInput = listFilePaths.get(i);

@@ -6,13 +6,10 @@ package thn.research.textutility.io;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -72,45 +69,6 @@ public class TextFileUtility {
         }
     }
 
-    /**
-     * getAllFilePaths.
-     *
-     * @param dirPath: directory path.
-     * @param extensions: extension such as .txt and .dat
-     * @return list of full path of files in the directory including
-     * subdirectory with extension specified.
-     */
-    public static List<String> getAllFilePaths(String dirPath, List<String> extensions) throws Exception {
-        File[] allFiles = new File(dirPath).listFiles();
-        List<String> files = new ArrayList<>();
-        for (File file : allFiles) {
-            if (file.isFile()) {
-                for (String ex : extensions) {
-                    if (file.getName().endsWith(ex)) {
-                        files.add(file.getAbsolutePath());
-                        break;
-                    }
-                }
-            } else {
-                files.addAll(getAllFilePaths(file.getPath(), extensions));
-            }
-        }
-        return files;
-    }
-
-    /**
-     * Solve exception when writing files to not existing directory using Java
-     * writer.
-     *
-     * @param filePath
-     * @throws Exception
-     */
-    public static void checkAndCreateParentDirs(String filePath) throws Exception {
-        File f = new File(filePath);
-        if (!(f.getParentFile().exists())) {
-            f.getParentFile().mkdirs();
-        }
-    }
 
     /**
      * Write text file, default encoding UTF-8, checked to create parent
@@ -125,7 +83,7 @@ public class TextFileUtility {
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(
                         new FileOutputStream(filePathOutput, append), "UTF-8"))) {
-            checkAndCreateParentDirs(filePathOutput);
+            FileUtility.checkToCreateParentDir(filePathOutput);
             writer.write(content);
         }
     }
