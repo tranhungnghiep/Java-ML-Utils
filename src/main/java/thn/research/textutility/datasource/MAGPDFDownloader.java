@@ -428,7 +428,7 @@ public class MAGPDFDownloader {
         String tempDirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDFTemp";
         boolean overwrite = false;
 
-        List<String> forbiddenDomain = Arrays.asList("acm.org", "ieee.org", "springer.com", "wiley.com", "sciencedirect.com", "elsevier.com", "scopus.com", "thomsonreuters.com", "nature.com", "sciencemag.org", "tandfonline.com", "researchgate.net", "arxiv.org/abs", "harvard.edu/abs");
+        List<String> forbiddenDomain = Arrays.asList("acm.org", "ieee.org", "springer.com", "wiley.com", "sciencedirect.com", "elsevier.com", "scopus.com", "cell.com", "elsevierhealth.com", "thomsonreuters.com", "nature.com", "sciencemag.org", "tandfonline.com", "researchgate.net", "arxiv.org/abs", "harvard.edu/abs");
 
         List<String> rateLimitDomain = null;
         int waitingSecond = 60;
@@ -438,13 +438,13 @@ public class MAGPDFDownloader {
         int readTimeout = 10000;
         
         int threadPoolSize;
-        if (args != null && args.length != 0 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) > 0) {
+        if (args != null && args.length != 0 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) >= 0) {
             threadPoolSize = Integer.parseInt(args[0]);
         } else {
             // Local.
 //            threadPoolSize = 10;
             // CPS, 125.
-            threadPoolSize = 1000;
+            threadPoolSize = 500;
         }
         
         try {
