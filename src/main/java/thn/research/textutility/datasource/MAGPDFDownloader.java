@@ -5,7 +5,6 @@
  */
 package thn.research.textutility.datasource;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +17,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,43 +30,43 @@ import thn.research.textutility.general.NumericUtility;
 /**
  * This class will download pdf files based on the url list in MAG dataset. 
  * Note that the url list is not clean: 
- - Link to abstract, pdf, other file types. 
- - Link to pdf may need to be resolved before download: not direct pdf. 
- - Many pdf may be in a server, e.g., citeseerx/arxiv: consecutive download may be blocked:
- check if blocked, put to wait list for 1 thread to handle consecutively. 
- - May need to use selenium for javascript resolve? 
- - 1 more problem: there may be many pdf file of 1 paper: full paper/presentation/other 
- - 1 more problem: may accidentally download pdf from payment source like IEEE, ACM... when
- connected from NII server: banned. Check download using wget on server to avoid (list of domain).
-
- Note that have to keep track of paper: using paper id by MAG.
-
- Critical problem: seem a lot of urls are invalid, cannot get pdf. So the
- estimation is far off, real value may be just 1 mil. -> if this is the case:
- need to use data from core as main source.
-
- Outline of the program: 
- - parallel thread pool. 
- - Read url list file line by line. 
- - for each line, let a thread handle it: check if it is pdf, try
- downloading, save as pdf, or put to wait list and let 1 thread to handle it. 
- - Note that: pdf of 1 paper id is downloaded only 1 time: if a pdf is successfully saved, stop other thread
- with same paper id. 
- - save in hierarchical directory: each folder has 100
- subfolder: A1-> A100, B1-> B100, C1-> C100, each subfolder Ci has 100 pdf.
- Depth first search, number of subfolder A depends on data, may be 10 mil pdf, or 1 mil?
-
- Important technical problem: 
- - sanity check link. 
- - avoid duplication. 
- - avoid blocking. 
- - sync all these: process in parallel.
- 
- But simple work flow first.
- - read url.
- - parse.
- - download not parallel.
- - save in 1 folder.
+ * - Link to abstract, pdf, other file types. 
+ * - Link to pdf may need to be resolved before download: not direct pdf. 
+ * - Many pdf may be in a server, e.g., citeseerx/arxiv/researchgate: consecutive download may be blocked:
+ * check if blocked, put to wait list for 1 thread to handle consecutively. 
+ * - May need to use selenium for javascript resolve? 
+ * - 1 more problem: there may be many pdf file of 1 paper: full paper/presentation/other 
+ * - 1 more problem: may accidentally download pdf from payment source like IEEE, ACM... when
+ * connected from NII server: banned. Check download using wget on server to avoid (list of domain).
+ *
+ * Note that have to keep track of paper: using paper id by MAG as file name.
+ *
+ * Critical problem: seem a lot of urls are just abstract, or html not pdf, or pointing to payment server, cannot get pdf. 
+ * So the estimation is far off, real value may be just 1 mil. 
+ * -> if this is the case: need to use data from core as main source.
+ *
+ * Outline of the program: 
+ * - parallel thread pool. 
+ * - Read url list file line by line. 
+ * - for each line, let a thread handle it: check if it is pdf, try
+ * downloading, save as pdf, or put to wait list and let 1 thread to handle it. 
+ * - Note that: pdf of 1 paper id is downloaded only 1 time: if a pdf is successfully saved, stop other thread
+ * with same paper id. 
+ * - save in hierarchical directory: each folder has 100
+ * subfolder: A1-> A100, B1-> B100, C1-> C100, each subfolder Ci has 100 pdf.
+ * Depth first search, number of subfolder A depends on data, may be 10 mil pdf, or 1 mil?
+ *
+ * Important technical problem: 
+ * - sanity check link. 
+ * - avoid duplication. 
+ * - avoid blocking.  
+ * - sync all these: process in parallel.
+ * 
+ * But simple work flow first.
+ * - read url.
+ * - parse.
+ * - download not parallel.
+ * - save in 1 folder.
  *
  * @author THNghiep
  */
@@ -124,6 +122,10 @@ public class MAGPDFDownloader {
             
             List<String> recentDomains = new ArrayList<>();
             
+            String[] parsedLine;
+            String paperId;
+            String rawUrl;
+            String tryDomain;
             // Read line.
             String line;
             while ((line = reader.readLine()) != null) {
@@ -131,9 +133,9 @@ public class MAGPDFDownloader {
                     continue;
                 }
                 // Parse line, get paper id and url.
-                String[] parsedLine = line.split("\t");
-                String paperId = parsedLine[0];
-                String rawUrl = parsedLine[1];
+                parsedLine = line.split("\t");
+                paperId = parsedLine[0];
+                rawUrl = parsedLine[1];
                 
                 String url = fixUrl(rawUrl);
                 
@@ -150,9 +152,8 @@ public class MAGPDFDownloader {
                 }
 
                 // If near consecutive rate limit domain, wait.
-                String tempDomain = null;
                 try {
-                    tempDomain = new URL(url).getHost();
+                    tryDomain = new URL(url).getHost();
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
@@ -163,7 +164,7 @@ public class MAGPDFDownloader {
 //                    e.printStackTrace();
                     continue;
                 }
-                String domain = tempDomain;
+                String domain = tryDomain;
                 if (rateLimitDomain != null && rateLimitDomain.stream().anyMatch(s -> url.contains(s)) 
                         && domain != null && recentDomains.stream().anyMatch(s -> domain.equals(s))) {
                     Thread.sleep(waitingSecond * 1000);
@@ -231,6 +232,10 @@ public class MAGPDFDownloader {
             
             List<String> recentDomains = new ArrayList<>();
             
+            String[] parsedLine;
+            String paperId;
+            String rawUrl;
+            String tryDomain;
             // Read line.
             String line;
             while ((line = reader.readLine()) != null) {
@@ -238,9 +243,9 @@ public class MAGPDFDownloader {
                     continue;
                 }
                 // Parse line, get paper id and url.
-                String[] parsedLine = line.split("\t");
-                String paperId = parsedLine[0];
-                String rawUrl = parsedLine[1];
+                parsedLine = line.split("\t");
+                paperId = parsedLine[0];
+                rawUrl = parsedLine[1];
                 
                 String url = fixUrl(rawUrl);
                 
@@ -257,9 +262,8 @@ public class MAGPDFDownloader {
                 }
                 
                 // If near consecutive rate limit domain, wait.
-                String tempDomain = null;
                 try {
-                    tempDomain = new URL(url).getHost();
+                    tryDomain = new URL(url).getHost();
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
@@ -270,7 +274,7 @@ public class MAGPDFDownloader {
 //                    e.printStackTrace();
                     continue;
                 }
-                String domain = tempDomain;
+                String domain = tryDomain;
                 if (rateLimitDomain != null && rateLimitDomain.stream().anyMatch(s -> url.contains(s)) 
                         && domain != null && recentDomains.stream().anyMatch(s -> domain.equals(s))) {
                     Thread.sleep(waitingSecond * 1000);
@@ -444,11 +448,11 @@ public class MAGPDFDownloader {
  * 
  * Note. There are something weird in this code??? Sometimes save bad, sometimes save without running, or after stop.
  * -> seem there are orphaned thread/leaked thread.
- * -> many java threads found in the OS. !!!
- *  -> maybe error of maven/netbeans?
- *      => Yes, netbeans error. Solution: 
- *          1. Run debug mode in netbeans, stop using stop debug.
- *          2. Run command line. e.g.: java -cp /Users/mac/NetBeansProjects/TextUtility/target/TextUtility-1.0-SNAPSHOT.jar thn.research.textutility.datasource.MAGPDFDownloader
+ *  -> many java processes found in the OS. !!!
+ *      -> maybe error of maven/netbeans?
+ *          => Yes, netbeans error. Solution: 
+ *              1. Run debug mode in netbeans, stop using stop debug.
+ *              2. Run command line. e.g.: java -cp /Users/mac/NetBeansProjects/TextUtility/target/TextUtility-1.0-SNAPSHOT.jar thn.research.textutility.datasource.MAGPDFDownloader
  * 
  * - Parallel, based on file check. OK.
  * 
