@@ -41,6 +41,11 @@ public class InternetUtility {
 			|| status == HttpURLConnection.HTTP_MOVED_TEMP
 				|| status == HttpURLConnection.HTTP_SEE_OTHER) {
             String redirectUrl = httpConn.getHeaderField("Location");
+            // redirectUrl may be null, if there is no header field Location.
+            if (redirectUrl == null) {
+                return null;
+            }
+            // Solve relative url.
             if (redirectUrl.startsWith("/")) {
                 if (u.getPort() == -1) {
                     redirectUrl = u.getProtocol() + "://" + u.getHost() + redirectUrl;
