@@ -181,7 +181,7 @@ public class MAGPDFDownloader {
                 // Download in parallel.
                 executor.submit(() -> {
                     try {
-                        downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout);
+                        downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
                     } catch (Exception ex) {
                         System.out.println("");
                         System.out.println("Exception in executor submit.");
@@ -292,7 +292,7 @@ public class MAGPDFDownloader {
                 recentDomains.add(domain);
                 
                 // Download.
-                downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout);
+                downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
             }
         }
             
@@ -308,11 +308,21 @@ public class MAGPDFDownloader {
      * @param fileType
      * @param connectionTimeout millisecond connect timeout.
      * @param readTimeout millisecond read data from source timeout.
+     * @param forbiddenDomain
      * @throws IOException
      */
-    public static void downloadFile(String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout) throws Exception {
+    public static void downloadFile(String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout, List<String> forbiddenDomain) throws Exception {
         try {
             url = InternetUtility.getFinalRedirectURL(url, connectionTimeout, readTimeout, 10, 0);
+            // Final url may be null.
+            if (url == null) {
+                return;
+            }
+            String parallelUrl = url;
+            // If url is in forbidden list, pass.
+            if (forbiddenDomain != null && forbiddenDomain.stream().anyMatch(s -> parallelUrl.contains(s))) {
+                return;
+            }
 
             URL u = new URL(url);
             HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
