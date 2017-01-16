@@ -190,6 +190,9 @@ public class MAGPDFDownloader {
             while (!executor.isTerminated()) {
             }
         }
+
+        System.out.println("");
+        System.out.println("Download Finish.");
     }
     
     /**
@@ -288,6 +291,9 @@ public class MAGPDFDownloader {
                 downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout);
             }
         }
+            
+        System.out.println("");
+        System.out.println("Download Finish.");
     }
     
     /**
@@ -408,9 +414,15 @@ public class MAGPDFDownloader {
     }
     
     public static void main(String[] args) {
+        // Local.
 //        String urlListFilePath = "/Users/mac/Downloads/PaperUrls.txt";
 //        String dirPathOutput = "/Users/mac/Downloads/PDF";
 //        String tempDirPathOutput = "/Users/mac/Downloads/PDFTemp";
+        // 125.
+//        String urlListFilePath = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PaperUrls.txt";
+//        String dirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDF";
+//        String tempDirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDFTemp";
+        // CPS.
         String urlListFilePath = "/mnt/storage/private/nghiep/Data/MAG/Unzip/PaperUrls.txt";
         String dirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDF";
         String tempDirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDFTemp";
@@ -429,8 +441,10 @@ public class MAGPDFDownloader {
         if (args != null && args.length != 0 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) > 0) {
             threadPoolSize = Integer.parseInt(args[0]);
         } else {
+            // Local.
 //            threadPoolSize = 10;
-            threadPoolSize = 500;
+            // CPS, 125.
+            threadPoolSize = 1000;
         }
         
         try {
