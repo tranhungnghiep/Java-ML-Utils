@@ -157,10 +157,10 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-                    System.out.println("");
-                    System.out.println("Exception: new URL() failed.");
-                    System.out.println("URL: " + url);
-                    System.out.println("Paper ID: " + paperId);
+//                    System.out.println("");
+//                    System.out.println("Exception: new URL() failed.");
+//                    System.out.println("URL: " + url);
+//                    System.out.println("Paper ID: " + paperId);
 //                    e.printStackTrace();
                     continue;
                 }
@@ -270,10 +270,10 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-                    System.out.println("");
-                    System.out.println("Exception: new URL() failed.");
-                    System.out.println("URL: " + url);
-                    System.out.println("Paper ID: " + paperId);
+//                    System.out.println("");
+//                    System.out.println("Exception: new URL() failed.");
+//                    System.out.println("URL: " + url);
+//                    System.out.println("Paper ID: " + paperId);
 //                    e.printStackTrace();
                     continue;
                 }
@@ -331,6 +331,7 @@ public class MAGPDFDownloader {
                         // FIFO: Before writing, always check avoid conflict between different download process. If exists, skip.
                         if (new File(filePath).exists() || new File(tempFilePath).exists()) {
                         } else {
+                            // The logic ensure that parent dirs are created.
 //                            FileUtility.checkToCreateParentDir(filePath);
 //                            FileUtility.checkToCreateParentDir(tempFilePath);
                             try (FileOutputStream outputStream = new FileOutputStream(tempFilePath)) {
@@ -358,10 +359,10 @@ public class MAGPDFDownloader {
                 }
 
             } else {
-                System.out.println("");
-                System.out.println("Error: Server replied HTTP code: " + responseCode);
-                System.out.println("URL: " + url);
-                System.out.println("File Path: " + filePath);
+//                System.out.println("");
+//                System.out.println("Error: Server replied HTTP code: " + responseCode);
+//                System.out.println("URL: " + url);
+//                System.out.println("File Path: " + filePath);
             }
             httpConn.disconnect();
         }
@@ -376,18 +377,18 @@ public class MAGPDFDownloader {
         }
         catch (MalformedURLException e) { 
             // new URL() failed
-            System.out.println("");
-            System.out.println("Exception: MalformedURLException: new URL() failed.");
-            System.out.println("URL: " + url);
-            System.out.println("File Path: " + filePath);
+//            System.out.println("");
+//            System.out.println("Exception: MalformedURLException: new URL() failed.");
+//            System.out.println("URL: " + url);
+//            System.out.println("File Path: " + filePath);
 //            e.printStackTrace();
         } 
         catch (IOException e) {   
             // openConnection() failed
-            System.out.println("");
-            System.out.println("Exception: IOException: openConnection() failed.");
-            System.out.println("URL: " + url);
-            System.out.println("File Path: " + filePath);
+//            System.out.println("");
+//            System.out.println("Exception: IOException: openConnection() failed.");
+//            System.out.println("URL: " + url);
+//            System.out.println("File Path: " + filePath);
 //            e.printStackTrace();
         }
         catch (Exception e) {   
@@ -452,6 +453,8 @@ public class MAGPDFDownloader {
             downloadPDFMAGParallel(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout, threadPoolSize);
         }
         catch (Exception e) {
+            System.out.println("");
+            System.out.println("Exception: main(.).");
             e.printStackTrace();
         }
     }
