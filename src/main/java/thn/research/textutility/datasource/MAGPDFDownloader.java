@@ -27,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import thn.research.textutility.general.GeneralUtility;
 import thn.research.textutility.general.InternetUtility;
 import thn.research.textutility.io.FileUtility;
+import thn.research.textutility.general.NumericUtility;
 
 /**
  * This class will download pdf files based on the url list in MAG dataset. 
@@ -420,8 +421,13 @@ public class MAGPDFDownloader {
         int connectionTimeout = 10000;
         int readTimeout = 10000;
         
-//        int threadPoolSize = 10;
-        int threadPoolSize = 500;
+        int threadPoolSize;
+        if (args != null && args.length != 0 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) > 0) {
+            threadPoolSize = Integer.parseInt(args[0]);
+        } else {
+//            threadPoolSize = 10;
+            threadPoolSize = 500;
+        }
         
         try {
 //            downloadPDFMAG(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout);
