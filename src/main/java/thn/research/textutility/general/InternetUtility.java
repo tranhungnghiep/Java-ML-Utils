@@ -20,10 +20,15 @@ public class InternetUtility {
      * @param url
      * @param connectionTimeout
      * @param readTimeout
+     * @param maxRedirectNumber
+     * @param currentRedirectNumber
      * @return
      * @throws Exception 
      */
-    public static String getFinalRedirectURL(String url, int connectionTimeout, int readTimeout) throws Exception {
+    public static String getFinalRedirectURL(String url, int connectionTimeout, int readTimeout, int maxRedirectNumber, int currentRedirectNumber) throws Exception {
+        if (currentRedirectNumber == maxRedirectNumber) {
+            return url;
+        }
         URL u = new URL(url);
         HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
         httpConn.setConnectTimeout(connectionTimeout);
@@ -43,7 +48,7 @@ public class InternetUtility {
                     redirectUrl = u.getProtocol() + "://" + u.getHost() + ":" + u.getPort() + redirectUrl;
                 }
             }
-            return getFinalRedirectURL(redirectUrl, connectionTimeout, readTimeout);
+            return getFinalRedirectURL(redirectUrl, connectionTimeout, readTimeout, maxRedirectNumber, currentRedirectNumber + 1);
         }
         return url;
     }

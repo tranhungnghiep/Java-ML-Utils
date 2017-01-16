@@ -308,7 +308,7 @@ public class MAGPDFDownloader {
      */
     public static void downloadFile(String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout) throws Exception {
         try {
-            url = InternetUtility.getFinalRedirectURL(url, connectionTimeout, readTimeout);
+            url = InternetUtility.getFinalRedirectURL(url, connectionTimeout, readTimeout, 10, 0);
 
             URL u = new URL(url);
             HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
@@ -526,4 +526,5 @@ public class MAGPDFDownloader {
  *      OK.
  *          Auto maintain: delete /temp when rerun, guarantee finished download and clean partial download.
  * - Many url from https://www.ncbi.nlm.nih.gov is missing host. Check url start withs "/pmc/articles/" and add. OK
+ * - Log to file, not print to system output. sout slow down the program.
  */
