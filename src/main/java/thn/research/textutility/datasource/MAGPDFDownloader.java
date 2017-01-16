@@ -5,7 +5,6 @@
  */
 package thn.research.textutility.datasource;
 
-import com.google.common.hash.BloomFilter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,10 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.apache.commons.io.FileExistsException;
@@ -550,4 +547,6 @@ public class MAGPDFDownloader {
  * - listFilePaths.contains(): Linear may be very slow. Change to Set. OK.
  * - Log to file, not print to system output. sout slow down the program.
  * - Rerun skip urls that are tried before. 2 approaches: 1. skip a number of lines, 2. skip if paper id after it is downloaded.
+ *      -> later, now the main problem is that the pdf collection is too big, cannot do it anyway. 
+ *          May need to process gradually, or integrate core data first.
  */
