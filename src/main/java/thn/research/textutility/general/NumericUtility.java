@@ -44,4 +44,20 @@ public class NumericUtility {
         }
         return result;
     }
+
+    /**
+     * Check String is Integer or not.
+     *
+     * @param strNum
+     * @return
+     */
+    public static boolean isInteger(String strNum) {
+        boolean result = true;
+        try {
+            Integer.parseInt(strNum);
+        } catch (NumberFormatException e) {
+            result = false;
+        }
+        return result;
+    }
 }
