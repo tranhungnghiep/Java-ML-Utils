@@ -558,6 +558,7 @@ public class MAGPDFDownloader {
                 "ci.nii.ac.jp", "dbpia.co.kr", 
                 "worldcat.org", "dx.doi.org", "google.com", "harvard.edu/abs", 
                 "jstor.org", "iopscience.iop.org", "freepatentsonline.com", "cambridge.org", "pnas.org", "deepdyve.com", 
+                "thelancet.com", "ncbi.nlm.nih.gov", "jvascsurg.org", "eblue.org", "www.jaad.org", 
                 "scielo.br", "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
                 ".jp");
 
