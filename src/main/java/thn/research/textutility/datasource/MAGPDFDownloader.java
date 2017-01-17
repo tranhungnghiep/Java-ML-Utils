@@ -596,9 +596,11 @@ public class MAGPDFDownloader {
             downloadPDFMAGParallel(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout, threadPoolSize, skipLineNum);
         }
         catch (Exception e) {
-            System.out.println("");
-            System.out.println("Exception: main(.).");
-            e.printStackTrace();
+//            System.out.println("");
+//            System.out.println("Exception: main(.).");
+//            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Exception: main(.).");
+            LOGGER.log(Level.SEVERE, "Exception in executor submit. " + e.toString(), e);
         }
     }
 }
