@@ -15,12 +15,18 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import thn.research.textutility.general.GeneralUtility;
@@ -73,6 +79,11 @@ import thn.research.textutility.general.NumericUtility;
  */
 public class MAGPDFDownloader {
 
+    private static final Logger LOGGER = Logger.getLogger(MAGPDFDownloader.class.getName());
+    private static final Logger LOGGER_MISC = Logger.getLogger(MAGPDFDownloader.class.getName() + "_misc");
+    
+    private static Set<String> downloadedPaperId = ConcurrentHashMap.newKeySet();
+    
     /**
      * Parallel version of downloadPDFMAG(.).
      * Download pdf files from MAG url list.
@@ -90,9 +101,12 @@ public class MAGPDFDownloader {
      * @param connectionTimeout
      * @param readTimeout
      * @param threadPoolSize
+     * @param skipLineNum
      * @throws Exception 
      */
-    public static void downloadPDFMAGParallel(String urlListFilePath, String dirPathOutput, String tempDirPathOutput, boolean overwrite, List<String> forbiddenDomain, List<String> rateLimitDomain, int waitingSecond, int maxConsecutiveCheck, int connectionTimeout, int readTimeout, int threadPoolSize) throws Exception {
+    public static void downloadPDFMAGParallel(String urlListFilePath, String dirPathOutput, String tempDirPathOutput, boolean overwrite, List<String> forbiddenDomain, List<String> rateLimitDomain, int waitingSecond, int maxConsecutiveCheck, int connectionTimeout, int readTimeout, int threadPoolSize, long skipLineNum) throws Exception {
+        LOGGER.log(Level.INFO, "Download Start.");
+        
         // Thread pool.
         ExecutorService executor;
         if (threadPoolSize == 0) {
@@ -103,12 +117,16 @@ public class MAGPDFDownloader {
 
         List<String> mimeType = Arrays.asList("application/pdf", "application/x-pdf");
 
-        HashSet<String> downloadedFilePaths = null;
+        // Get downloaded paper id.
         if (overwrite) {
             FileUtils.deleteQuietly(new File(dirPathOutput));
         } else {
             // Get downloaded paper id.
-            downloadedFilePaths = new HashSet<>(FileUtility.getAllFilePaths(dirPathOutput, Arrays.asList(".pdf")));
+            List<String> listFilePaths = FileUtility.getAllFilePaths(dirPathOutput, Arrays.asList(".pdf"));
+            for (String path : listFilePaths) {
+                String paperId = path.substring(path.length() - 12, path.length() - 4);
+                downloadedPaperId.add(paperId);
+            }
         }
         // Always delete temp dir.
         FileUtils.deleteQuietly(new File(tempDirPathOutput));
@@ -116,37 +134,41 @@ public class MAGPDFDownloader {
         FileUtility.checkToCreateDir(dirPathOutput);
         FileUtility.checkToCreateDir(tempDirPathOutput);
 
+        long count = 0;
         // Read URL list.
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                         new FileInputStream(urlListFilePath), "UTF-8"))) {
             
-            List<String> recentDomains = new ArrayList<>();
+            List<String> recentDomains = new LinkedList<>();
             
             String[] parsedLine;
-            String paperId;
-            String rawUrl;
             String tryDomain;
             // Read line.
             String line;
             while ((line = reader.readLine()) != null) {
+                count++;
+                if (count % 1000000 == 0) {
+//                    System.out.println("");
+//                    System.out.println("Processed line: " + count);
+                    LOGGER.log(Level.INFO, "Processed line: " + count);
+                }
+                if (count <= skipLineNum) {
+                    continue;
+                }
                 if (line.isEmpty()) {
                     continue;
                 }
                 // Parse line, get paper id and url.
                 parsedLine = line.split("\t");
-                paperId = parsedLine[0];
-                rawUrl = parsedLine[1];
+                String paperId = parsedLine[0];
                 
                 // If the paper has been downloaded, pass.
-                String filePath = dirPathOutput + File.separator + paperId + ".pdf";
-                String tempFilePath = tempDirPathOutput + File.separator + paperId + ".pdf";
-                if (!overwrite && downloadedFilePaths.contains(filePath)) {
+                if (!overwrite && downloadedPaperId.contains(paperId)) {
                     continue;
                 }
 
-                String url = fixUrl(rawUrl);
-                
+                String url = fixUrl(parsedLine[1]);
                 // If url is in forbidden list, pass.
                 if (forbiddenDomain != null && forbiddenDomain.stream().anyMatch(s -> url.contains(s))) {
                     continue;
@@ -175,14 +197,18 @@ public class MAGPDFDownloader {
                 }
                 recentDomains.add(domain);
 
+                String filePath = dirPathOutput + File.separator + paperId + ".pdf";
+                String tempFilePath = tempDirPathOutput + File.separator + paperId + ".pdf";
+
                 // Download in parallel.
                 executor.submit(() -> {
                     try {
-                        downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
+                        downloadFile(url, paperId, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
                     } catch (Exception ex) {
-                        System.out.println("");
-                        System.out.println("Exception in executor submit.");
-                        ex.printStackTrace();
+//                        System.out.println("");
+//                        System.out.println("Exception in executor submit.");
+//                        ex.printStackTrace();
+                        LOGGER.log(Level.SEVERE, "Exception in executor submit. " + ex.toString(), ex);
                     }
                 });
             }
@@ -192,8 +218,9 @@ public class MAGPDFDownloader {
             }
         }
 
-        System.out.println("");
-        System.out.println("Download Finish.");
+//        System.out.println("");
+//        System.out.println("Download Finish.");
+        LOGGER.log(Level.INFO, "Download Finish. Processed line: " + count);
     }
     
     /**
@@ -211,17 +238,24 @@ public class MAGPDFDownloader {
      * @param maxConsecutiveCheck
      * @param connectionTimeout
      * @param readTimeout
+     * @param skipLineNum
      * @throws Exception 
      */
-    public static void downloadPDFMAG(String urlListFilePath, String dirPathOutput, String tempDirPathOutput, boolean overwrite, List<String> forbiddenDomain, List<String> rateLimitDomain, int waitingSecond, int maxConsecutiveCheck, int connectionTimeout, int readTimeout) throws Exception {
+    public static void downloadPDFMAG(String urlListFilePath, String dirPathOutput, String tempDirPathOutput, boolean overwrite, List<String> forbiddenDomain, List<String> rateLimitDomain, int waitingSecond, int maxConsecutiveCheck, int connectionTimeout, int readTimeout, long skipLineNum) throws Exception {
+        LOGGER.log(Level.INFO, "Download Start.");
+        
         List<String> mimeType = Arrays.asList("application/pdf", "application/x-pdf");
 
-        HashSet<String> downloadedFilePaths = null;
+        // Get downloaded paper id.
         if (overwrite) {
             FileUtils.deleteQuietly(new File(dirPathOutput));
         } else {
             // Get downloaded paper id.
-            downloadedFilePaths = new HashSet<>(FileUtility.getAllFilePaths(dirPathOutput, Arrays.asList(".pdf")));
+            List<String> listFilePaths = FileUtility.getAllFilePaths(dirPathOutput, Arrays.asList(".pdf"));
+            for (String path : listFilePaths) {
+                String paperId = path.substring(path.length() - 12, path.length() - 4);
+                downloadedPaperId.add(paperId);
+            }
         }
         // Always delete temp dir.
         FileUtils.deleteQuietly(new File(tempDirPathOutput));
@@ -229,37 +263,41 @@ public class MAGPDFDownloader {
         FileUtility.checkToCreateDir(dirPathOutput);
         FileUtility.checkToCreateDir(tempDirPathOutput);
 
+        long count = 0;
         // Read URL list.
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(
                         new FileInputStream(urlListFilePath), "UTF-8"))) {
             
-            List<String> recentDomains = new ArrayList<>();
+            List<String> recentDomains = new LinkedList<>();
             
             String[] parsedLine;
-            String paperId;
-            String rawUrl;
             String tryDomain;
             // Read line.
             String line;
             while ((line = reader.readLine()) != null) {
+                count++;
+                if (count % 1000000 == 0) {
+//                    System.out.println("");
+//                    System.out.println("Processed line: " + count);
+                    LOGGER.log(Level.INFO, "Processed line: " + count);
+                }
+                if (count <= skipLineNum) {
+                    continue;
+                }
                 if (line.isEmpty()) {
                     continue;
                 }
                 // Parse line, get paper id and url.
                 parsedLine = line.split("\t");
-                paperId = parsedLine[0];
-                rawUrl = parsedLine[1];
+                String paperId = parsedLine[0];
                                 
                 // If the paper has been downloaded, pass.
-                String filePath = dirPathOutput + File.separator + paperId + ".pdf";
-                String tempFilePath = tempDirPathOutput + File.separator + paperId + ".pdf";
-                if (!overwrite && downloadedFilePaths.contains(filePath)) {
+                if (!overwrite && downloadedPaperId.contains(paperId)) {
                     continue;
                 }
                 
-                String url = fixUrl(rawUrl);
-                
+                String url = fixUrl(parsedLine[1]);
                 // If url is in forbidden list, pass.
                 if (forbiddenDomain != null && forbiddenDomain.stream().anyMatch(s -> url.contains(s))) {
                     continue;
@@ -288,18 +326,23 @@ public class MAGPDFDownloader {
                 }
                 recentDomains.add(domain);
                 
+                String filePath = dirPathOutput + File.separator + paperId + ".pdf";
+                String tempFilePath = tempDirPathOutput + File.separator + paperId + ".pdf";
+
                 // Download.
-                downloadFile(url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
+                downloadFile(url, paperId, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
             }
         }
             
-        System.out.println("");
-        System.out.println("Download Finish.");
+//        System.out.println("");
+//        System.out.println("Download Finish.");
+        LOGGER.log(Level.INFO, "Download Finish. Processed line: " + count);
     }
     
     /**
      * Downloads a file from a URL using java HttpURLConnection.
      * @param url HTTP URL of the file to be downloaded
+     * @param id the paper id corresponding to this url, use to check downloaded paper.
      * @param filePath path to save the file
      * @param tempFilePath
      * @param fileType
@@ -308,9 +351,13 @@ public class MAGPDFDownloader {
      * @param forbiddenDomain
      * @throws IOException
      */
-    public static void downloadFile(String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout, List<String> forbiddenDomain) throws Exception {
+    public static void downloadFile(String url, String id, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout, List<String> forbiddenDomain) throws Exception {
+        HttpURLConnection httpConn = null;
         try {
-            url = InternetUtility.getFinalRedirectURL(url, connectionTimeout, readTimeout, 10, 0);
+            if (downloadedPaperId.contains(id)) {
+                return;
+            }
+            url = InternetUtility.getFinalRedirectURL(url, connectionTimeout, readTimeout, 10, 0, LOGGER_MISC);
             // Final url may be null.
             if (url == null) {
                 return;
@@ -322,7 +369,7 @@ public class MAGPDFDownloader {
             }
 
             URL u = new URL(url);
-            HttpURLConnection httpConn = (HttpURLConnection) u.openConnection();
+            httpConn = (HttpURLConnection) u.openConnection();
             httpConn.setConnectTimeout(connectionTimeout);
             httpConn.setReadTimeout(readTimeout);
             // Avoid some 403 forbidden.
@@ -334,13 +381,15 @@ public class MAGPDFDownloader {
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 // Check content type: pdf.
                 String contentType = httpConn.getContentType();
+                if (contentType == null) {
+                    return;
+                }
                 if (fileType == null || fileType.stream().anyMatch(s -> contentType.startsWith(s))) {
-                    
                     // Manually download, reuse Connection to reduce blocking.
                     try (InputStream inputStream = httpConn.getInputStream()) {
                         // FIFO: Before writing, always check avoid conflict between different download process. If exists, skip.
-                        if (new File(filePath).exists() || new File(tempFilePath).exists()) {
-                        } else {
+                        if (!downloadedPaperId.contains(id)) {
+                            downloadedPaperId.add(id);
                             // The logic ensure that parent dirs are created.
 //                            FileUtility.checkToCreateParentDir(filePath);
 //                            FileUtility.checkToCreateParentDir(tempFilePath);
@@ -354,13 +403,6 @@ public class MAGPDFDownloader {
                             FileUtils.moveFile(new File(tempFilePath), new File(filePath));
                         }
                     }
-                    
-                    // Using Apache common io. Auto create parent dir. Need to manually check overwrite, pdf... before downloadPDF.
-                    // Error: currently not recognizing separator between dir PDF and file name.
-//                    if (!new File(filePath).exists()) { 
-//                        // Always check overwrite: FIFO: To avoid conflict between different download process.
-//                        FileUtils.copyURLToFile(new URL(url), new File(filePath), connectionTimeout, readTimeout);
-//                    }
                 } else {
 //                    System.out.println("");
 //                    System.out.println("Error: No matching mime-type. Server replied mime-type: " + contentType);
@@ -373,43 +415,55 @@ public class MAGPDFDownloader {
 //                System.out.println("URL: " + url);
 //                System.out.println("File Path: " + filePath);
             }
-            httpConn.disconnect();
-        }
-        catch (FileExistsException e) {   
+        } catch (FileExistsException e) {   
             // Apache io move file failed.
-            System.out.println("");
-            System.out.println("Exception: FileExistsException: Apache io move file failed.");
-            System.out.println("URL: " + url);
-            System.out.println("File Path: " + filePath);
+//            System.out.println("");
+//            System.out.println("Exception: FileExistsException: Apache io move file failed.");
+//            System.out.println("URL: " + url);
+//            System.out.println("File Path: " + filePath);
+            LOGGER.log(Level.SEVERE, "Exception: FileExistsException: Apache io move file failed.");
+            LOGGER.log(Level.SEVERE, "URL: " + url);
+            LOGGER.log(Level.SEVERE, "File Path: " + filePath);
             FileUtils.deleteQuietly(new File(tempFilePath));
 //            e.printStackTrace();
-        }
-        catch (MalformedURLException e) { 
+        } catch (MalformedURLException e) { 
             // new URL() failed
 //            System.out.println("");
 //            System.out.println("Exception: MalformedURLException: new URL() failed.");
 //            System.out.println("URL: " + url);
 //            System.out.println("File Path: " + filePath);
 //            e.printStackTrace();
-        }
-        catch (IOException e) {   
+        } catch (IOException e) {   
             // openConnection() failed
 //            System.out.println("");
 //            System.out.println("Exception: IOException: openConnection() failed.");
 //            System.out.println("URL: " + url);
 //            System.out.println("File Path: " + filePath);
 //            e.printStackTrace();
-        }
-        catch (Exception e) {   
+        } catch (Exception e) {   
             // other exception
-            System.out.println("");
-            System.out.println("Exception: Other.");
-            System.out.println("URL: " + url);
-            System.out.println("File Path: " + filePath);
-            e.printStackTrace();
+//            System.out.println("");
+//            System.out.println("Exception: Other.");
+//            System.out.println("URL: " + url);
+//            System.out.println("File Path: " + filePath);
+//            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Exception: Other.");
+            LOGGER.log(Level.SEVERE, "URL: " + url);
+            LOGGER.log(Level.SEVERE, "File Path: " + filePath);
+            LOGGER.log(Level.SEVERE, "Exception in executor submit. " + e.toString(), e);
+        } finally {
+            if (httpConn != null) {
+                httpConn.disconnect();
+            }
         }
     }
 
+    /**
+     * Fix some common url error.
+     * 
+     * @param url
+     * @return 
+     */
     public static String fixUrl(String url) {
         if (url.startsWith("/pmc/articles/")) {
             return "https://www.ncbi.nlm.nih.gov" + url;
@@ -428,7 +482,57 @@ public class MAGPDFDownloader {
         }
         return url;
     }
+
+    /**
+     * Find the last line number of the downloaded pdf.
+     * 
+     * @param urlListFilePath
+     * @param dirPathOutput
+     * @return
+     * @throws Exception 
+     */
+    private static long getSkipLineNum(String urlListFilePath, String dirPathOutput) throws Exception {
+        // Get downloaded paper id.
+        HashSet<String> hashSet = new HashSet<>();
+        List<String> listFilePaths = FileUtility.getAllFilePaths(dirPathOutput, Arrays.asList(".pdf"));
+        for (String path : listFilePaths) {
+            String paperId = path.substring(path.length() - 12, path.length() - 4);
+            hashSet.add(paperId);
+        }
+        long count = 0;
+        long skipLine = 0;
+
+        // Read URL list.
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream(urlListFilePath), "UTF-8"))) {
+            
+            // Read line.
+            String line;
+            while ((line = reader.readLine()) != null) {
+                count++;
+                if (line.isEmpty()) {
+                    continue;
+                }
+                // Parse line, get paper id.
+                String paperId = line.split("\t")[0];
+                                
+                // If the paper has been downloaded, skip.
+                if (hashSet.contains(paperId)) {
+                    skipLine = count;
+                }
+            }
+        }
+        LOGGER.log(Level.INFO, "Skip line: " + skipLine);
+        return skipLine;
+    }
     
+    /**
+     * args[0] int, thread pool size, >= 0. Default: 500, 0 means auto specify.
+     * args[1] long, number of skip line, >= 0. Default: auto count.
+     * 
+     * @param args 
+     */
     public static void main(String[] args) {
         // Local.
 //        String urlListFilePath = "/Users/mac/Downloads/PaperUrls.txt";
@@ -444,7 +548,18 @@ public class MAGPDFDownloader {
         String tempDirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDFTemp";
         boolean overwrite = false;
 
-        List<String> forbiddenDomain = Arrays.asList("acm.org", "ieee.org", "springer.com", "wiley.com", "sciencedirect.com", "elsevier.com", "scopus.com", "cell.com", "elsevierhealth.com", "thomsonreuters.com", "nature.com", "sciencemag.org", "tandfonline.com", "researchgate.net", "arxiv.org/abs", "harvard.edu/abs");
+        // Try to filter out all databases, only download from author's homepage.
+        List<String> forbiddenDomain = Arrays.asList("acm.org", "ieee.org", "springer.com", 
+                "elsevier.com", "scopus.com", "cell.com", "elsevierhealth.com", "sciencedirect.com", 
+                "sagepub.com", "wiley.com", "tandfonline.com", "thomsonreuters.com", 
+                "nature.com", "sciencemag.org", 
+                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", 
+                "researchgate.net", "academia.edu", 
+                "ci.nii.ac.jp", "dbpia.co.kr", 
+                "worldcat.org", "dx.doi.org", "google.com", "harvard.edu/abs", 
+                "jstor.org", "iopscience.iop.org", "freepatentsonline.com", "cambridge.org", "pnas.org", "deepdyve.com", 
+                "scielo.br", "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
+                ".jp");
 
         List<String> rateLimitDomain = null;
         int waitingSecond = 60;
@@ -454,7 +569,7 @@ public class MAGPDFDownloader {
         int readTimeout = 10000;
         
         int threadPoolSize;
-        if (args != null && args.length != 0 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) >= 0) {
+        if (args != null && args.length >= 1 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) >= 0) {
             threadPoolSize = Integer.parseInt(args[0]);
         } else {
             // Local.
@@ -464,8 +579,20 @@ public class MAGPDFDownloader {
         }
         
         try {
-//            downloadPDFMAG(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout);
-            downloadPDFMAGParallel(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout, threadPoolSize);
+            Handler handler = new FileHandler(new File(dirPathOutput).getParent() + File.separator + MAGPDFDownloader.class.getName() + ".log");
+            Logger.getLogger(MAGPDFDownloader.class.getName()).addHandler(handler);
+            handler = new FileHandler(new File(dirPathOutput).getParent() + File.separator + MAGPDFDownloader.class.getName() + "_misc.log");
+            Logger.getLogger(MAGPDFDownloader.class.getName() + "_misc").addHandler(handler);
+            
+            long skipLineNum;
+            if (args != null && args.length >= 2 && NumericUtility.isInteger(args[1]) && Integer.parseInt(args[1]) >= 0) {
+                skipLineNum = Integer.parseInt(args[1]);
+            } else {
+                skipLineNum = getSkipLineNum(urlListFilePath, dirPathOutput);
+            }
+
+//            downloadPDFMAG(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout, skipLineNum);
+            downloadPDFMAGParallel(urlListFilePath, dirPathOutput, tempDirPathOutput, overwrite, forbiddenDomain, rateLimitDomain, waitingSecond, maxConsecutiveCheck, connectionTimeout, readTimeout, threadPoolSize, skipLineNum);
         }
         catch (Exception e) {
             System.out.println("");
@@ -546,7 +673,14 @@ public class MAGPDFDownloader {
  * - Many url from https://www.ncbi.nlm.nih.gov is missing host. Check url start withs "/pmc/articles/" and add. OK
  * - listFilePaths.contains(): Linear may be very slow. Change to Set. OK.
  * - Log to file, not print to system output. sout slow down the program.
- * - Rerun skip urls that are tried before. 2 approaches: 1. skip a number of lines, 2. skip if paper id after it is downloaded.
+ * - Rerun skip urls that are tried before: skip all line bofore the last downloaded paper.
  *      -> later, now the main problem is that the pdf collection is too big, cannot do it anyway. 
  *          May need to process gradually, or integrate core data first.
+ *  => cannot rerun: maybe need to get the last paper id one time from the downloaded pdf.
+ * 
+ * ok ok, there are too many issues. This is just toy code, not scalable.
+ *      => Now just do some simple line counting and log the progress, then tag it and do a rewrite with the new architecture.
+ *          => New architecture: 
+ *              1. only crawl from distributed source (author homepage, avoid database site)
+ *              2. synced hashset check while download, replace file system check.
  */
