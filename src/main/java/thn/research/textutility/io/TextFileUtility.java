@@ -80,10 +80,10 @@ public class TextFileUtility {
      * @throws Exception
      */
     public static void writeTextFile(String filePathOutput, String content, boolean append) throws Exception {
+        FileUtility.checkToCreateParentDir(filePathOutput);
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(
                         new FileOutputStream(filePathOutput, append), "UTF-8"))) {
-            FileUtility.checkToCreateParentDir(filePathOutput);
             writer.write(content);
         }
     }

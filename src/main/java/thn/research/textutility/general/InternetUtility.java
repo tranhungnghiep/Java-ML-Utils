@@ -25,6 +25,7 @@ public class InternetUtility {
      * @param readTimeout
      * @param maxRedirectNumber
      * @param currentRedirectNumber
+     * @param logger
      * @return
      * @throws Exception
      */
