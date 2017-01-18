@@ -603,8 +603,8 @@ public class MAGPDFDownloader {
 
     /**
      * args[0] int, thread pool size, >= 0. Default: 500, 0 means auto specify.
-     * args[1] long, from line, >= 1. Default: auto skip line + 1.
-     * args[2] long, to line, >= 0. Default: 0, means to the end.
+     * args[1] long, from line, >= 0. Default: 1, 0 means auto skip line + 1.
+     * args[2] long, to line, >= 0. Default: 0, 0 means to the end.
      * 
      * @param args 
      */
@@ -614,13 +614,13 @@ public class MAGPDFDownloader {
 //        String dirPathOutput = "/Users/mac/Downloads/PDF";
 //        String tempDirPathOutput = "/Users/mac/Downloads/PDFTemp";
         // 125.
-//        String urlListFilePath = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PaperUrls.txt";
-//        String dirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDF";
-//        String tempDirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDFTemp";
+        String urlListFilePath = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PaperUrls.txt";
+        String dirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDF";
+        String tempDirPathOutput = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF\\PDFTemp";
         // CPS.
-        String urlListFilePath = "/mnt/storage/private/nghiep/Data/MAG/Unzip/PaperUrls.txt";
-        String dirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDF";
-        String tempDirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDFTemp";
+//        String urlListFilePath = "/mnt/storage/private/nghiep/Data/MAG/Unzip/PaperUrls.txt";
+//        String dirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDF";
+//        String tempDirPathOutput = "/mnt/storage/private/nghiep/Data/MAG/PDFTemp";
         boolean overwrite = false;
 
         // Try to filter out all databases, only download from author's homepage.
@@ -667,9 +667,10 @@ public class MAGPDFDownloader {
             long fromLineNum;
             if (args != null && args.length >= 2 && NumericUtility.isInteger(args[1]) && Integer.parseInt(args[1]) >= 1) {
                 fromLineNum = Integer.parseInt(args[1]);
-            } else {
-//                fromLineNum = 1;
+            } else if (args != null && args.length >= 2 && NumericUtility.isInteger(args[1]) && Integer.parseInt(args[1]) == 0) {
                 fromLineNum = getSkipLineNum(urlListFilePath, dirPathOutput) + 1;
+            } else {
+                fromLineNum = 1;
             }
             long toLineNum;
             if (args != null && args.length >= 3 && NumericUtility.isInteger(args[2]) && Integer.parseInt(args[2]) >= 0) {
