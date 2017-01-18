@@ -654,6 +654,7 @@ public class MAGPDFDownloader {
             downloadedPaperId.clear();
             readDonePaperIds(dirPathOutput, downloadedPaperId);
             getDownloadedPaperIds(dirPathOutput, downloadedPaperId);
+            writeDonePaperIds(downloadedPaperId, dirPathOutput);
 
             int threadPoolSize;
             if (args != null && args.length >= 1 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) >= 0) {
