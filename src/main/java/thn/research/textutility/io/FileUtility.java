@@ -23,9 +23,9 @@ public class FileUtility {
      * @throws Exception
      */
     public static void checkToCreateParentDir(String filePath) throws Exception {
-        File f = new File(filePath);
-        if (!(f.getParentFile().exists())) {
-            f.getParentFile().mkdirs();
+        File file = new File(filePath);
+        if ((file.getParentFile() != null) && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
         }
     }
 
