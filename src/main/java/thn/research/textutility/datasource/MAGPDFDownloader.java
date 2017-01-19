@@ -602,21 +602,21 @@ public class MAGPDFDownloader {
     }
 
     /**
-     * args[0] int, switch functionality. Default: 1, means only update done list.
+     * args[0] String, base dir. Default: empty string "", means using the value in code, which defaults to local.
+     * args[1] int, switch functionality. Default: 1, means only update done list.
      * 1: update done paper id list. 
      * 2: continue downloading. 
      * 3: delete pdf based on done paper id list file. Be careful! Do not delete after updating done paper id list file.
-     * args[1] int, thread pool size, >= 0. Default: 10, 0 means auto specify.
-     * args[2] long, from line, >= 0. Default: 1, 0 means auto skip line + 1.
-     * args[3] long, to line, >= 0. Default: 0, 0 means to the end.
-     * args[4] String, base dir. Default: empty, means using the value in code, which defaults to local.
+     * args[2] int, thread pool size, >= 0. Default: 10, 0 means auto specify.
+     * args[3] long, from line, >= 0. Default: 1, 0 means auto skip line + 1.
+     * args[4] long, to line, >= 0. Default: 0, 0 means to the end.
      * 
      * @param args 
      */
     public static void main(String[] args) {
         String baseDir;
-        if (args != null && args.length >= 5 && !args[4].isEmpty()) {
-            baseDir = args[4];
+        if (args != null && args.length >= 1 && !args[0].isEmpty()) {
+            baseDir = args[0];
         } else {
             // Local.
             baseDir = "/Users/mac/Downloads";
@@ -659,8 +659,8 @@ public class MAGPDFDownloader {
             Logger.getLogger(MAGPDFDownloader.class.getName() + "_misc").addHandler(handler);
             
             int functionality;
-            if (args != null && args.length >= 1 && NumericUtility.isInteger(args[0]) && Integer.parseInt(args[0]) >= 1) {
-                functionality = Integer.parseInt(args[0]);
+            if (args != null && args.length >= 2 && NumericUtility.isInteger(args[1]) && Integer.parseInt(args[1]) >= 1) {
+                functionality = Integer.parseInt(args[1]);
             } else {
                 functionality = 1;
             }
@@ -682,8 +682,8 @@ public class MAGPDFDownloader {
                 getDownloadedPaperIds(dirPathOutput, downloadedPaperId);
 
                 int threadPoolSize;
-                if (args != null && args.length >= 2 && NumericUtility.isInteger(args[1]) && Integer.parseInt(args[1]) >= 0) {
-                    threadPoolSize = Integer.parseInt(args[1]);
+                if (args != null && args.length >= 3 && NumericUtility.isInteger(args[2]) && Integer.parseInt(args[2]) >= 0) {
+                    threadPoolSize = Integer.parseInt(args[2]);
                 } else {
                     // Local.
                     threadPoolSize = 10;
@@ -691,8 +691,8 @@ public class MAGPDFDownloader {
 //                    threadPoolSize = 1000;
                 }
                 long fromLineNum;
-                if (args != null && args.length >= 3 && NumericUtility.isInteger(args[2]) && Integer.parseInt(args[2]) >= 0) {
-                    fromLineNum = Integer.parseInt(args[2]);
+                if (args != null && args.length >= 4 && NumericUtility.isInteger(args[3]) && Integer.parseInt(args[3]) >= 0) {
+                    fromLineNum = Integer.parseInt(args[3]);
                 } else {
                     fromLineNum = 1;
                 }
@@ -700,8 +700,8 @@ public class MAGPDFDownloader {
                     fromLineNum = getSkipLineNum(urlListFilePath, dirPathOutput) + 1;
                 }
                 long toLineNum;
-                if (args != null && args.length >= 4 && NumericUtility.isInteger(args[3]) && Integer.parseInt(args[3]) >= 0) {
-                    toLineNum = Integer.parseInt(args[3]);
+                if (args != null && args.length >= 5 && NumericUtility.isInteger(args[4]) && Integer.parseInt(args[4]) >= 0) {
+                    toLineNum = Integer.parseInt(args[4]);
                 } else {
 //                    toLineNum = 7000;
                     toLineNum = 0;
