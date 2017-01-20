@@ -46,6 +46,7 @@ import thn.research.textutility.general.NumericUtility;
  * - Link to pdf may need to be resolved before download: not direct pdf. 
  * - Many pdf may be in a server, e.g., citeseerx/arxiv/researchgate: consecutive download may be blocked:
  * check if blocked, put to wait list for 1 thread to handle consecutively. 
+ * -> better avoid crawling academic database, find bulk download.
  * - May need to use selenium for javascript resolve? 
  * - 1 more problem: there may be many pdf file of 1 paper: full paper/presentation/other 
  * - 1 more problem: may accidentally download pdf from payment source like IEEE, ACM... when
@@ -56,6 +57,7 @@ import thn.research.textutility.general.NumericUtility;
  * Critical problem: seem a lot of urls are just abstract, or html not pdf, or pointing to payment server, cannot get pdf. 
  * So the estimation is far off, real value may be just 1 mil. 
  * -> if this is the case: need to use data from core as main source.
+ * -> turns out underestimated. Check more. But need to start with bulky source core, arxiv, citeseerx.
  *
  * Outline of the program: 
  * - parallel thread pool. 
@@ -152,8 +154,6 @@ public class MAGPDFDownloader {
             while ((line = reader.readLine()) != null) {
                 count++;
                 if ((count - 1) % 1000000 == 0) {
-//                    System.out.println("");
-//                    System.out.println("Processed line: " + count);
                     LOGGER.log(Level.INFO, "Processed line: " + (count - 1));
                 }
                 if (count < fromLineNum) {
@@ -186,11 +186,8 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-//                    System.out.println("");
-//                    System.out.println("Exception: new URL() failed.");
-//                    System.out.println("URL: " + url);
-//                    System.out.println("Paper ID: " + paperId);
-//                    e.printStackTrace();
+//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "!");
+//                    LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
                     continue;
                 }
                 String domain = tryDomain;
@@ -214,11 +211,8 @@ public class MAGPDFDownloader {
                 executor.submit(() -> {
                     try {
                         downloadFile(paperId, url, filePath, tempFilePath, mimeType, connectionTimeout, readTimeout, forbiddenDomain);
-                    } catch (Exception ex) {
-//                        System.out.println("");
-//                        System.out.println("Exception in executor submit.");
-//                        ex.printStackTrace();
-                        LOGGER.log(Level.SEVERE, "Exception in executor submit. " + ex.toString() + "!", ex);
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Exception in executor submit. " + e.toString() + "!", e);
                     }
                 });
             }
@@ -235,8 +229,6 @@ public class MAGPDFDownloader {
 //            executor.shutdownNow();
         }
 
-//        System.out.println("");
-//        System.out.println("Download Finish.");
         LOGGER.log(Level.INFO, "Download Finish. Processed line: " + (count - 1));
     }
     
@@ -293,8 +285,6 @@ public class MAGPDFDownloader {
             while ((line = reader.readLine()) != null) {
                 count++;
                 if ((count - 1) % 1000000 == 0) {
-//                    System.out.println("");
-//                    System.out.println("Processed line: " + count);
                     LOGGER.log(Level.INFO, "Processed line: " + (count - 1));
                 }
                 if (count < fromLineNum) {
@@ -327,11 +317,8 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-//                    System.out.println("");
-//                    System.out.println("Exception: new URL() failed.");
-//                    System.out.println("URL: " + url);
-//                    System.out.println("Paper ID: " + paperId);
-//                    e.printStackTrace();
+//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "!");
+//                    LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
                     continue;
                 }
                 String domain = tryDomain;
@@ -352,8 +339,6 @@ public class MAGPDFDownloader {
             }
         }
             
-//        System.out.println("");
-//        System.out.println("Download Finish.");
         LOGGER.log(Level.INFO, "Download Finish. Processed line: " + (count - 1));
     }
     
@@ -368,10 +353,9 @@ public class MAGPDFDownloader {
      * @param connectionTimeout millisecond connect timeout.
      * @param readTimeout millisecond read data from source timeout.
      * @param forbiddenDomain
-     * @throws Exception
      */
-    public static void downloadFile(String id, String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout, List<String> forbiddenDomain) throws Exception {
-        // Check when in turn of this url, before doing anything like opening connection.
+    public static void downloadFile(String id, String url, String filePath, String tempFilePath, List<String> fileType, int connectionTimeout, int readTimeout, List<String> forbiddenDomain) {
+        // Check , before doing anything like opening connection.
         if (downloadedPaperId.contains(id)) {
             return;
         }
@@ -406,50 +390,28 @@ public class MAGPDFDownloader {
                         }
                     }
                 } else {
-//                    System.out.println("");
-//                    System.out.println("Error: No matching mime-type. Server replied mime-type: " + contentType);
-//                    System.out.println("URL: " + url);
-//                    System.out.println("File Path: " + filePath);
+//                    LOGGER.log(Level.SEVERE, "Error: No matching mime-type. Server replied mime-type: " + contentType + "!");
+//                    LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
                 }
             }
         } catch (FileExistsException e) {   
             // Apache io move file failed.
-//            System.out.println("");
-//            System.out.println("Exception: FileExistsException: Apache io move file failed.");
-//            System.out.println("URL: " + url);
-//            System.out.println("File Path: " + filePath);
             LOGGER.log(Level.SEVERE, "Exception: FileExistsException: Apache io move file failed." + "!");
-            LOGGER.log(Level.SEVERE, "URL: " + url);
-            LOGGER.log(Level.SEVERE, "File Path: " + filePath);
+            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
             FileUtils.deleteQuietly(new File(tempFilePath));
 //            e.printStackTrace();
         } catch (MalformedURLException e) { 
             // new URL() failed
-//            System.out.println("");
-//            System.out.println("Exception: MalformedURLException: new URL() failed.");
-//            System.out.println("URL: " + url);
-//            System.out.println("File Path: " + filePath);
-//            e.printStackTrace();
+//            LOGGER.log(Level.SEVERE, "MalformedURLException in downloadFile: " + e.toString() + "!");
+//            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
         } catch (IOException e) {   
             // openConnection() failed
-//            System.out.println("");
-//            System.out.println("Exception: IOException: openConnection() failed.");
-//            System.out.println("URL: " + url);
-//            System.out.println("File Path: " + filePath);
-//            e.printStackTrace();
             LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "!");
-            LOGGER.log(Level.SEVERE, "URL: " + url);
-            LOGGER.log(Level.SEVERE, "File Path: " + filePath);
+            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
         } catch (Exception e) {   
             // other exception
-//            System.out.println("");
-//            System.out.println("Exception: Other.");
-//            System.out.println("URL: " + url);
-//            System.out.println("File Path: " + filePath);
-//            e.printStackTrace();
             LOGGER.log(Level.SEVERE, "Exception (Other) in downloadFile: " + e.toString() + "!", e);
-            LOGGER.log(Level.SEVERE, "URL: " + url);
-            LOGGER.log(Level.SEVERE, "File Path: " + filePath);
+            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
         } finally {
             if (httpConn != null) {
                 httpConn.disconnect();
@@ -730,9 +692,6 @@ public class MAGPDFDownloader {
                 return;
             }
         } catch (Exception e) {
-//            System.out.println("");
-//            System.out.println("Exception: main(.).");
-//            e.printStackTrace();
             LOGGER.log(Level.SEVERE, "Exception in main(.): " + e.toString(), e);
         } finally {
             LOGGER.log(Level.INFO, "End main(.)");
@@ -765,7 +724,7 @@ public class MAGPDFDownloader {
  *              1 reason for 403: user agent: OK.
  *          429: too many request.
  *              researchgate.net: seem because of request to get redirect url.
- *                  -> avoid using getfinalurl().
+ *                  -> avoid using getfinalhttpconn().
  *              other: try waiting before access. Note that have to wait sequentially. So it also blocks other sites.
  *              -> at this time, forbid researchgate (about 40 mil url).
  *          503: (temporary) unavailable service.
@@ -776,7 +735,7 @@ public class MAGPDFDownloader {
  *      http://onlinelibrary.wiley.com/doi/10.1034/j.1601-0825.2003.02920.x/full
  *          Some fulltext are in html, not pdf.
  *      -> use a forbidden list of domain, if url contain the item in this list: stop. 
- *          already blocked major domains, for any missed domain, it has to block this downloader. OK.
+ *          already blocked major domains. => need a complete list.
  * - Fail to download from arxiv. 301: move not follow. 403: forbidden.
  *      -> fixed 301, fix 403: OK.
  * - Download paper vs slide. !!!
@@ -807,23 +766,23 @@ public class MAGPDFDownloader {
  *      -> check both dir while download.
  *      Caution: may leak in /temp if error while moving. Need to check to reset /temp.
  *      OK.
- *          Auto maintain: delete /temp when rerun, guarantee finished download and clean partial download.
+ *          Auto maintenance: delete /temp when rerun, guarantee finished download and clean partial download.
  * - Many url from https://www.ncbi.nlm.nih.gov is missing host. Check url start withs "/pmc/articles/" and add. OK
  * - listFilePaths.contains(): Linear may be very slow. Change to Set. OK.
- * - Log to file, not print to system output. sout slow down the program.
+ * - Log to file, not print to system output. sout slow down the program. OK.
  * - Rerun skip urls that are tried before: skip all line bofore the last downloaded paper.
  *      -> later, now the main problem is that the pdf collection is too big, cannot do it anyway. 
  *          May need to process gradually, or integrate core data first.
- *  => cannot rerun: maybe need to get the last paper id one time from the downloaded pdf.
+ *  => cannot just rerun: maybe need to get the last paper id one time from the downloaded pdf???
  * 
  * ok ok, there are too many issues. This is just toy code, not scalable.
  *      => Now just do some simple line counting and log the progress, then tag it and do a rewrite with the new architecture.
  *          => New architecture: 
- *              1. only crawl from distributed source (author homepage, avoid database site)
- *              2. synced hashset check while download, replace file system check.
+ *              1. only crawl from distributed source (author homepage, avoid database site). Most major.
+ *              2. synced hashset check while download, replace file system check. OK
  * 
  * Toward a complete MAG dataset:
- * Because papers are from many sources and at many machine, need to maintain a file containing list of donePaperId.
+ * Because papers are from many sources and at many machine, need to maintain a file containing list of donePaperId. OK.
  * 
  * Note:
  * => Had better getting fulltext from core, arxiv, citeseer before downloading pdf.
