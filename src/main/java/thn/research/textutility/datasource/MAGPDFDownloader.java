@@ -186,8 +186,7 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "!");
-//                    LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "\n" + "\t" + "Paper ID: " + paperId + ". URL: " + url);
                     continue;
                 }
                 String domain = tryDomain;
@@ -317,8 +316,7 @@ public class MAGPDFDownloader {
                 } 
                 catch (Exception e) {
                     // Also precheck malformed url before download.
-//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "!");
-//                    LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+//                    LOGGER.log(Level.SEVERE, "MalformedURLException in precheck: " + e.toString() + "\n" + "\t" + "Paper ID: " + paperId + ". URL: " + url);
                     continue;
                 }
                 String domain = tryDomain;
@@ -396,22 +394,18 @@ public class MAGPDFDownloader {
             }
         } catch (FileExistsException e) {   
             // Apache io move file failed.
-            LOGGER.log(Level.SEVERE, "Exception: FileExistsException: Apache io move file failed." + "!");
-            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+            LOGGER.log(Level.SEVERE, "Exception: FileExistsException: Apache io move file failed." + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
             FileUtils.deleteQuietly(new File(tempFilePath));
 //            e.printStackTrace();
         } catch (MalformedURLException e) { 
             // new URL() failed
-//            LOGGER.log(Level.SEVERE, "MalformedURLException in downloadFile: " + e.toString() + "!");
-//            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+//            LOGGER.log(Level.SEVERE, "MalformedURLException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (IOException e) {   
             // openConnection() failed
-            LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "!");
-            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+            LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (Exception e) {   
             // other exception
-            LOGGER.log(Level.SEVERE, "Exception (Other) in downloadFile: " + e.toString() + "!", e);
-            LOGGER.log(Level.SEVERE, "Paper ID: " + id + ". URL: " + url);
+            LOGGER.log(Level.SEVERE, "Exception (Other) in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url, e);
         } finally {
             if (httpConn != null) {
                 httpConn.disconnect();
