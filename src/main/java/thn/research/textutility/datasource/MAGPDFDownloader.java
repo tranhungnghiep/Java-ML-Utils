@@ -589,8 +589,9 @@ public class MAGPDFDownloader {
         int waitingSecond = 60;
         int maxConsecutiveCheck = 10;
         
-        int connectionTimeout = 10000;
-        int readTimeout = 10000;
+        // Millisecond.
+        int connectionTimeout = 60000;
+        int readTimeout = 60000;
         
         try {
             // Format log on 1 line.
