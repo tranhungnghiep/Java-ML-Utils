@@ -31,6 +31,7 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
 import thn.research.textutility.general.GeneralUtility;
@@ -636,11 +637,17 @@ public class MAGPDFDownloader {
         int readTimeout = 10000;
         
         try {
+            // Format log on 1 line.
+            System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tF %1$tT %4$s %2$s %5$s%6$s%n");
+            // LOGGER to console and file, 1 line.
             Handler handler = new FileHandler(baseDir + File.separator + MAGPDFDownloader.class.getName() + ".log");
-            Logger.getLogger(MAGPDFDownloader.class.getName()).addHandler(handler);
+            handler.setFormatter(new SimpleFormatter());
+            LOGGER.addHandler(handler);
+            // LOGGER to file only, 1 line.
+            LOGGER_MISC.setUseParentHandlers(false);
             handler = new FileHandler(baseDir + File.separator + MAGPDFDownloader.class.getName() + "_misc.log");
-            Logger.getLogger(MAGPDFDownloader.class.getName() + "_misc").addHandler(handler);
-            Logger.getLogger(MAGPDFDownloader.class.getName() + "_misc").setUseParentHandlers(false);
+            handler.setFormatter(new SimpleFormatter());
+            LOGGER_MISC.addHandler(handler);
             
             LOGGER.log(Level.INFO, "Start main(.)");
 
