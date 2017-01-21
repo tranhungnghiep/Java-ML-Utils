@@ -561,7 +561,7 @@ public class MAGPDFDownloader {
             // Local.
             baseDir = "/Users/mac/Downloads";
             // 125.
-//            baseDir = "E:\\NghiepTHWorking\\Data\\MAG\\TestPDF";
+//            baseDir = "E:\\NghiepTH Working\\Data\\MAG\\TestPDF";
             // CPS.
 //            baseDir = "/mnt/storage/private/nghiep/Data/MAG";
         }
@@ -580,8 +580,9 @@ public class MAGPDFDownloader {
                 "nature.com", "sciencemag.org", 
                 "thomsonreuters.com", 
                 // Database.
-                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", "nlm.nih.gov", 
-                "nii.ac.jp", "jst.go.jp", "researchmap.jp", "ndl.go.jp", "nichigai.co.jp",
+                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", "ncbi.nlm.nih.gov", "nlm.nih.gov", 
+                "ci.nii.ac.jp", "nii.ac.jp", "lib.soken.ac.jp", "soken.ac.jp", 
+                "jst.go.jp", "researchmap.jp", "ndl.go.jp", "nichigai.co.jp",
                 "dbpia.co.kr", 
                 // Open.
                 "plos.org", "cambridge.org", "deepdyve.com", 
@@ -595,6 +596,8 @@ public class MAGPDFDownloader {
                 // Broad.
                 ".jp"
         );
+        // Especially check NII lib guide:
+        // https://www.nii.ac.jp/en/about/library/
         // Also check these: 
         // http://guides.library.yale.edu/ealdatabases/japan-databases
         // http://guides.is.uwa.edu.au/japanese
