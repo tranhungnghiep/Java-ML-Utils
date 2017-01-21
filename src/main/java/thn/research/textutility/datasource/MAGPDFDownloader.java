@@ -572,18 +572,35 @@ public class MAGPDFDownloader {
         boolean overwrite = false;
 
         // Try to filter out all databases, only download from author's homepage.
-        List<String> forbiddenDomain = Arrays.asList("acm.org", "ieee.org", "springer.com", 
+        List<String> forbiddenDomain = Arrays.asList(
+                // Supscription.
+                "acm.org", "ieee.org", "springer.com", 
                 "elsevier.com", "scopus.com", "cell.com", "elsevierhealth.com", "sciencedirect.com", 
-                "sagepub.com", "wiley.com", "tandfonline.com", "thomsonreuters.com", 
+                "sagepub.com", "wiley.com", "tandfonline.com", "thelancet.com", "pnas.org", 
                 "nature.com", "sciencemag.org", 
-                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", 
+                "thomsonreuters.com", 
+                // Database.
+                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", "nlm.nih.gov", 
+                "nii.ac.jp", "jst.go.jp", "researchmap.jp", "ndl.go.jp", "nichigai.co.jp",
+                "dbpia.co.kr", 
+                // Open.
+                "plos.org", "cambridge.org", "deepdyve.com", 
+                // Other database.
                 "researchgate.net", "academia.edu", 
-                "ci.nii.ac.jp", "dbpia.co.kr", 
-                "worldcat.org", "dx.doi.org", "google.com", "harvard.edu/abs", 
-                "jstor.org", "iopscience.iop.org", "freepatentsonline.com", "cambridge.org", "pnas.org", "deepdyve.com", 
-                "thelancet.com", "ncbi.nlm.nih.gov", "jvascsurg.org", "eblue.org", "www.jaad.org", 
+                // Other service.
+                "worldcat.org", "dx.doi.org", "jstor.org", "google.com", "harvard.edu/abs", 
+                // 403: uninvited.
+                "iopscience.iop.org", "freepatentsonline.com", "jvascsurg.org", "eblue.org", "www.jaad.org", 
                 "scielo.br", "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
-                ".jp");
+                // Broad.
+                ".jp"
+        );
+        // Also check these: 
+        // http://guides.library.yale.edu/ealdatabases/japan-databases
+        // http://guides.is.uwa.edu.au/japanese
+        // http://subjects.library.manchester.ac.uk/japanesestudies/databases/
+        // http://www.wul.waseda.ac.jp/research-navi/find_journals-articles-e.html
+        // http://www.sophia.ac.jp/eng/research/library/search/Database-Search
 
         List<String> rateLimitDomain = null;
         int waitingSecond = 60;
