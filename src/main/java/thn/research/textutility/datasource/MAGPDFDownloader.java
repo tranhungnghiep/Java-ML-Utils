@@ -799,10 +799,10 @@ public class MAGPDFDownloader {
  * Toward a complete MAG dataset:
  * Because papers are from many sources and at many machine, need to maintain a file containing list of donePaperId. OK.
  * 
- * Note:
- * => Had better getting fulltext from core, arxiv, citeseer before downloading pdf.
+ * TODO:
+ * 1. => Had better getting fulltext from core before downloading pdf.
  * - Using other machine is bad, transferring is very bad.
- *      -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps.
+ *      2. -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps.
  *          => next week ask for the list.
  *          => also update forbidden list based on 403 and 429 log.
  *          => then may rerun from start for a clean data, it's pretty quick.
