@@ -572,38 +572,80 @@ public class MAGPDFDownloader {
         boolean overwrite = false;
 
         // Try to filter out all databases, only download from author's homepage.
+        // Manually built, so the list may contain duplicate sites or not exhaustive. 
         List<String> forbiddenDomain = Arrays.asList(
-                // Supscription.
-                "acm.org", "ieee.org", "springer.com", 
-                "elsevier.com", "scopus.com", "cell.com", "elsevierhealth.com", "sciencedirect.com", 
-                "sagepub.com", "wiley.com", "tandfonline.com", "thelancet.com", "pnas.org", 
-                "nature.com", "sciencemag.org", 
-                "thomsonreuters.com", 
-                // Database.
-                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", "ncbi.nlm.nih.gov", "nlm.nih.gov", 
-                "ci.nii.ac.jp", "nii.ac.jp", "lib.soken.ac.jp", "soken.ac.jp", 
-                "jst.go.jp", "researchmap.jp", "ndl.go.jp", "nichigai.co.jp",
-                "dbpia.co.kr", 
-                // Open.
-                "plos.org", "cambridge.org", "deepdyve.com", 
-                // Other database.
-                "researchgate.net", "academia.edu", 
-                // Other service.
-                "worldcat.org", "dx.doi.org", "jstor.org", "google.com", "harvard.edu/abs", 
-                // 403: uninvited.
-                "iopscience.iop.org", "freepatentsonline.com", "jvascsurg.org", "eblue.org", "www.jaad.org", 
-                "scielo.br", "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
                 // Broad.
-                ".jp"
+                ".jp",
+                // NII lib related & Japan database.
+                // https://www.nii.ac.jp/en/about/library/
+                "ci.nii.ac.jp", "webcatplus.nii.ac.jp", "opac.nii.ac.jp", "reo.nii.ac.jp", "nii.ac.jp", 
+                "jst.go.jp", "nichigai.co.jp", "ndl.go.jp", "researchmap.jp", 
+                // NII lib related.
+                // https://staff.nii.ac.jp/library/library_en/
+                // http://www.nii.ac.jp/en/about/library/gakunin/
+                "nig.ac.jp", "ism.ac.jp", "nipr.ac.jp", 
+                "sfx2.usaco.co.jp", "usaco.co.jp", 
+                "lib.meiji.ac.jp", 
+                // NII lib subscription.
+                // https://staff.nii.ac.jp/library/OLJ_en/
+                "acm.org", "ieee.org", "springer.com", 
+                "aps.org", "bioone.org", "cambridge.org", 
+                "informaworld.com", "nowpublishers.com", "igi-global.com", 
+                "iop.org", "jstor.org", "maruzen.co.jp", "morganclaypool.com", 
+                "nature.com", "sciencemag.org", "oxfordjournals.org", "universitypressscholarship.com", 
+                "elsevier.com", "sciencedirect.com", "cell.com", "elsevierhealth.com", "siam.org", "wiley.com", 
+                "ipsj.ixsq.nii.ac.jp", 
+                // NII lib database subscription.
+                // https://staff.nii.ac.jp/library/db_en/
+                "thomsonreuters.com", "webofknowledge.com", "jdream3.com", "ams.org", 
+                "proquest.com", "scopus.com", "stneasy-japan.cas.org", "nikkei.co.jp", 
+                // Sokendai related.
+                // http://www.lib.soken.ac.jp/index-e.html
+                // http://www.lib.soken.ac.jp/sokenlib/libs-e.html
+                "lib.soken.ac.jp", "libopac.soken.ac.jp", "soken.ac.jp", 
+                "klnet.pref.kanagawa.jp", "jsap.or.jp", "mbsj.jp", "mext.go.jp", 
+                "minpaku.ac.jp", "nichibun.ac.jp", "rekihaku.ac.jp", "nime.ac.jp", "ism.ac.jp", "kek.jp", 
+                "orion.ac.jp", "nao.ac.jp", "nifs.ac.jp", "nipr.ac.jp", "jaxa.jp", "nijl.ac.jp", 
+                // Sokendai lib subscription.
+                // http://www.lib.soken.ac.jp/ej/ejlist.html
+                "bioone.org", "nature.com", "natureasia.com", "sagepub.com", "sciencedirect.com", "scirus.com", "wiley.com", 
+                "jstor.org", "oxfordjournals.org", "scienceonline.org", "sciencemag.jp", "springer.de", 
+                "scopus.com", 
+                // Most journals and databases in the world (not repeated sites in subscription list above).
+                // http://sfx2.usaco.co.jp/rois/az?set_first_page=1&param_lang_save=eng&param_perform_value=locate
+                "actapress.com", "ageconsearch.umn.edu", "usain.org", "scitation.org", "ala.org", "ama.org", "ams.org", 
+                "ametsoc.org", "amnh.org", "aps.org", "asce.org", "amstat.org", "annualreviews.org", "adsabs.harvard.edu", 
+                "benthamscience.com", "biomedcentral.com", "bmj.com", "botany.org", 
+                "cairn.info", "magazine.cairn.edu", "cms.math.ca", "cdnsciencepub.com", "csj.jp", "cognet.mit.edu", "csa.com", 
+                "esa.org", "edpsciences.org", "emeraldgrouppublishing.com", "emispub.com", 
+                "nowpublishers.com", "e-journals.org", 
+                "geoscienceworld.org", 
+                "highwire.org", "hindawi.com", 
+                "digital-library.theiet.org", "informs.org", "ingentaconnect.com", "impan.pl", "iospress.nl", 
+                "epicitb.com", "loc.gov", 
+                "massmed.org", "msp.org", "metapress.com", "mitpressjournals.org", 
+                "osa.org", "oup.com", "muse.jhu.edu", 
+                "revel.unice.fr", "revues.org", "royalsociety.org", "royalsociety.org.nz", 
+                "sabinet.co.za", "scielo.br", "scialert.com", "si.edu", "seg.org", "sora.unm.edu", "spiedigitallibrary.org", 
+                "tandfonline.com", "terrapub.co.jp", 
+                "unibiopress.org", "ub.uni-bielefeld.de", "utpress.utoronto.ca", "utppublishing.com", 
+                "degruyter.com", "worldscientific.com", 
+                // Other Supscription.
+                "thelancet.com", "pnas.org", 
+                // Other Open.
+                "plos.org", "deepdyve.com", 
+                // Other Service.
+                "worldcat.org", "dx.doi.org", "doaj.org", "google.com", "harvard.edu/abs", 
+                // Other Database.
+                "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", 
+                "ncbi.nlm.nih.gov", "nlm.nih.gov", 
+                "dbpia.co.kr", 
+                // Other Hub.
+                "researchgate.net", "academia.edu", 
+                // 403, 429: uninvited.
+                "freepatentsonline.com", "jvascsurg.org", "eblue.org", "jaad.org", 
+                "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org"
         );
-        // Especially check NII lib guide:
-        // https://www.nii.ac.jp/en/about/library/
-        // Also check these: 
-        // http://guides.library.yale.edu/ealdatabases/japan-databases
-        // http://guides.is.uwa.edu.au/japanese
-        // http://subjects.library.manchester.ac.uk/japanesestudies/databases/
-        // http://www.wul.waseda.ac.jp/research-navi/find_journals-articles-e.html
-        // http://www.sophia.ac.jp/eng/research/library/search/Database-Search
 
         List<String> rateLimitDomain = null;
         int waitingSecond = 60;
@@ -802,8 +844,7 @@ public class MAGPDFDownloader {
  * TODO:
  * 1. => Had better getting fulltext from core before downloading pdf.
  * - Using other machine is bad, transferring is very bad.
- *      2. -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps.
- *          => next week ask for the list.
+ *      2. -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps. Done.
  *          => also update forbidden list based on 403 and 429 log.
  *          => then may rerun from start for a clean data, it's pretty quick.
  */
