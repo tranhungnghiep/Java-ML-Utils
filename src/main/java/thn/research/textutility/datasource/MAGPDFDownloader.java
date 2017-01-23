@@ -592,8 +592,10 @@ public class MAGPDFDownloader {
                 "aps.org", "bioone.org", "cambridge.org", 
                 "informaworld.com", "nowpublishers.com", "igi-global.com", 
                 "iop.org", "jstor.org", "maruzen.co.jp", "morganclaypool.com", 
-                "nature.com", "sciencemag.org", "oxfordjournals.org", "universitypressscholarship.com", 
-                "elsevier.com", "sciencedirect.com", "cell.com", "elsevierhealth.com", "siam.org", "wiley.com", 
+                "nature.com", "sciencemag.org", 
+                "oxfordjournals.org", "universitypressscholarship.com", 
+                "elsevier.com", "sciencedirect.com", "cell.com", "elsevierhealth.com", 
+                "siam.org", "wiley.com", 
                 "ipsj.ixsq.nii.ac.jp", 
                 // NII lib database subscription.
                 // https://staff.nii.ac.jp/library/db_en/
@@ -617,7 +619,7 @@ public class MAGPDFDownloader {
                 "ametsoc.org", "amnh.org", "aps.org", "asce.org", "amstat.org", "annualreviews.org", "adsabs.harvard.edu", 
                 "benthamscience.com", "biomedcentral.com", "bmj.com", "botany.org", 
                 "cairn.info", "magazine.cairn.edu", "cms.math.ca", "cdnsciencepub.com", "csj.jp", "cognet.mit.edu", "csa.com", 
-                "esa.org", "edpsciences.org", "emeraldgrouppublishing.com", "emispub.com", 
+                "esa.org", "edpsciences.org", "emeraldgrouppublishing.com", "emeraldinsight.com", "emispub.com", 
                 "nowpublishers.com", "e-journals.org", 
                 "geoscienceworld.org", 
                 "highwire.org", "hindawi.com", 
@@ -627,7 +629,7 @@ public class MAGPDFDownloader {
                 "osa.org", "oup.com", "muse.jhu.edu", 
                 "revel.unice.fr", "revues.org", "royalsociety.org", "royalsociety.org.nz", 
                 "sabinet.co.za", "scielo.br", "scialert.com", "si.edu", "seg.org", "sora.unm.edu", "spiedigitallibrary.org", 
-                "tandfonline.com", "terrapub.co.jp", 
+                "tandfonline.com", "tandf.net", "terrapub.co.jp", 
                 "unibiopress.org", "ub.uni-bielefeld.de", "utpress.utoronto.ca", "utppublishing.com", 
                 "degruyter.com", "worldscientific.com", 
                 // Other Supscription.
@@ -635,16 +637,49 @@ public class MAGPDFDownloader {
                 // Other Open.
                 "plos.org", "deepdyve.com", 
                 // Other Service.
-                "worldcat.org", "dx.doi.org", "doaj.org", "google.com", "harvard.edu/abs", 
+                "worldcat.org", "dx.doi.org", "doaj.org", "google.com", "goodreads.com", "harvard.edu/abs", 
                 // Other Database.
                 "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", 
                 "ncbi.nlm.nih.gov", "nlm.nih.gov", 
                 "dbpia.co.kr", 
                 // Other Hub.
-                "researchgate.net", "academia.edu", 
-                // 403, 429: uninvited.
+                "researchgate.net", "academia.edu", "mendeley.com", "zotero.org", "citeulike.org", 
+                // Dangerous, multiple top level domain.
+                "thepiratebay.", 
+                "acm.", "ieee.", "springer.", 
+                "aps.", "bioone.", "cambridge.", 
+                "informaworld.", "nowpublishers.", "igi-global.", 
+                "iop.", "jstor.", "maruzen.", "morganclaypool.", 
+                "nature.", "natureasia.", "sciencemag.", "scienceonline.", 
+                "oxfordjournals.", "universitypressscholarship.", 
+                "elsevier.", "sciencedirect.", "cell.", "elsevierhealth.", 
+                "siam.", "wiley.", 
+                "thomsonreuters.", "webofknowledge.", "jdream3.", "ams.", 
+                "proquest.", "scopus.", "stneasy-japan.", "nikkei.", 
+                "sagepub.", "scirus.", 
+                "thelancet.", "pnas.", "tandf.", "tandfonline.", 
+                // Adaptive: these are just some notable error sites. Should auto forbid all error sites in log.
+                // Bad site.
+                "unirioja.es", "ijidonline.com", "aaojournal.org", "dtic.mil", "rsc.org", 
+                "patents.com", "infona.pl", "drugandalcoholdependence.com", "cpdrjournal.com", 
+                "gastrojournal.org", "gallerypress.com", "journals.uic.edu", "asm.org", "apa.org", 
+                "ifreevampire.com", "microbialcellfactories.com", "wemjournal.org", "saudiophthaljournal.com", 
+                "biblio.com", "usenix.org", "ahajournals.org", "andjrnl.org", "francoangeli.it", "psyn-journal.com", 
+                "medscape.com", "cancergeneticsjournal.org", "publish.csiro.au", "cysticfibrosisjournal.com", 
+                "ajronline.org", "librosdeginecologia.com", "biblio.com", "jebdp.com", "cabdirect.org", 
+                // Uninvited.
+                // 403.
                 "freepatentsonline.com", "jvascsurg.org", "eblue.org", "jaad.org", 
-                "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org"
+                "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
+                "cqvip.com", "ajog.org", "amjmed.com", "jem-journal.com", "jaacap.com", 
+                "ajkd.org", "journalofdairyscience.org", "jtcvsonline.org", "theriojournal.com", 
+                "wemjournal.org", "biologicalpsychiatryjournal.com", "ejog.org", "aornjournal.org", 
+                "cancerletters.info", "burnsjournal.com", "redjournal.org", "whijournal.com", "anaesthesiajournal.co.uk", 
+                "sleep-journal.com", "joms.org", "celltherapyjournal.org", "drupjournal.com", "surgjournal.com", 
+                // 429.
+                "phthiraptera.info", "myspecies.info", "amsciepub.com", "carrots-download.com", "torrentsmafi.net", 
+                "fs-data-base.com", "greenbaumgilhooleys.com", "pirateswrc.com", "torrentmafia.biz", "africanafrican.com", 
+                "dentalbookshop.com", "torfinder.net", "federalregister.gov", "kingdomofheavenflx.org", "dlall4.net", "iczn.org"
         );
 
         List<String> rateLimitDomain = null;
@@ -844,7 +879,9 @@ public class MAGPDFDownloader {
  * TODO:
  * 1. => Had better getting fulltext from core before downloading pdf.
  * - Using other machine is bad, transferring is very bad.
- *      2. -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps. Done.
- *          => also update forbidden list based on 403 and 429 log.
+ *      2. -> better solution is acquiring the accurate list of subscription sites to avoid, and run only on cps. OK.
+ *          => also update forbidden list based on 403 and 429 log: need to load directly from log.
  *          => then may rerun from start for a clean data, it's pretty quick.
+ * Issues:
+ * - Some pdfs are very slow to download: need to move on. -> seems be able to self timeout after a long time. OK.
  */
