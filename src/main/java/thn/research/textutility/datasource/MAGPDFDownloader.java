@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -398,10 +399,14 @@ public class MAGPDFDownloader {
             FileUtils.deleteQuietly(new File(tempFilePath));
 //            e.printStackTrace();
         } catch (MalformedURLException e) { 
-            // new URL() failed
+            // new URL() failed. Too many to log.
 //            LOGGER.log(Level.SEVERE, "MalformedURLException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
+        } catch (SocketTimeoutException e) {   
+            // Time out. Too many to log.
+            // Had better forbid these sites, but there are too many.
+//            LOGGER.log(Level.SEVERE, "SocketTimeoutException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (IOException e) {   
-            // openConnection() failed
+            // openConnection() failed. Caught timeout, mostly unknown host.
             LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (Exception e) {   
             // other exception
@@ -637,7 +642,7 @@ public class MAGPDFDownloader {
                 // Other Open.
                 "plos.org", "deepdyve.com", 
                 // Other Service.
-                "worldcat.org", "dx.doi.org", "doaj.org", "google.com", "goodreads.com", "harvard.edu/abs", 
+                "worldcat.org", "dx.doi.org", "doaj.org", "goodreads.com", "biblio.com", "harvard.edu/abs", 
                 // Other Database.
                 "core.ac.uk", "arxiv.org", "citeseerx.ist.psu.edu", 
                 "ncbi.nlm.nih.gov", "nlm.nih.gov", 
@@ -658,28 +663,39 @@ public class MAGPDFDownloader {
                 "proquest.", "scopus.", "stneasy-japan.", "nikkei.", 
                 "sagepub.", "scirus.", 
                 "thelancet.", "pnas.", "tandf.", "tandfonline.", 
+                "scielo.", 
                 // Adaptive: these are just some notable error sites. Should auto forbid all error sites in log.
-                // Bad site.
-                "unirioja.es", "ijidonline.com", "aaojournal.org", "dtic.mil", "rsc.org", 
-                "patents.com", "infona.pl", "drugandalcoholdependence.com", "cpdrjournal.com", 
-                "gastrojournal.org", "gallerypress.com", "journals.uic.edu", "asm.org", "apa.org", 
-                "ifreevampire.com", "microbialcellfactories.com", "wemjournal.org", "saudiophthaljournal.com", 
-                "biblio.com", "usenix.org", "ahajournals.org", "andjrnl.org", "francoangeli.it", "psyn-journal.com", 
-                "medscape.com", "cancergeneticsjournal.org", "publish.csiro.au", "cysticfibrosisjournal.com", 
-                "ajronline.org", "librosdeginecologia.com", "biblio.com", "jebdp.com", "cabdirect.org", 
                 // Uninvited.
                 // 403.
                 "freepatentsonline.com", "jvascsurg.org", "eblue.org", "jaad.org", 
                 "cyberleninka.ru", "jamanetwork.com", "redalyc.org", "europepmc.org", 
-                "cqvip.com", "ajog.org", "amjmed.com", "jem-journal.com", "jaacap.com", 
-                "ajkd.org", "journalofdairyscience.org", "jtcvsonline.org", "theriojournal.com", 
-                "wemjournal.org", "biologicalpsychiatryjournal.com", "ejog.org", "aornjournal.org", 
+                "cqvip.com", "ajog.org", "ejog.org", "amjmed.com", "joms.org", "ajkd.org", "jaacap.com", 
+                "journalofdairyscience.org", "jtcvsonline.org", "theriojournal.com", 
+                "wemjournal.org", "jem-journal.com", "biologicalpsychiatryjournal.com", "aornjournal.org", 
                 "cancerletters.info", "burnsjournal.com", "redjournal.org", "whijournal.com", "anaesthesiajournal.co.uk", 
-                "sleep-journal.com", "joms.org", "celltherapyjournal.org", "drupjournal.com", "surgjournal.com", 
+                "sleep-journal.com", "celltherapyjournal.org", "drupjournal.com", "surgjournal.com", 
+                "annemergmed.com", "journal-surgery.net", "lungcancerjournal.info", "journalofsurgicalresearch.com", 
+                "jacr.org", "ejinme.com", "jad-journal.com", "e-jds.com", "theclinics.com", "ajodo.org", "ejves.com", "ajodo.org", 
                 // 429.
-                "phthiraptera.info", "myspecies.info", "amsciepub.com", "carrots-download.com", "torrentsmafi.net", 
-                "fs-data-base.com", "greenbaumgilhooleys.com", "pirateswrc.com", "torrentmafia.biz", "africanafrican.com", 
-                "dentalbookshop.com", "torfinder.net", "federalregister.gov", "kingdomofheavenflx.org", "dlall4.net", "iczn.org"
+                "amsciepub.com", "carrots-download.com", "phthiraptera.info", "myspecies.info", 
+                "torrentsmafi.net", "torrentmafia.biz", "torfinder.net", "pirateswrc.com", 
+                "fs-data-base.com", "greenbaumgilhooleys.com", "africanafrican.com", 
+                "dentalbookshop.com", "federalregister.gov", "kingdomofheavenflx.org", "dlall4.net", "iczn.org", 
+                "worldbank.org", 
+                // Not useful and unstable sites: unknown host exception.
+                "unirioja.es", "ijidonline.com", "aaojournal.org", "dtic.mil", "rsc.org", 
+                "patents.com", "infona.pl", "drugandalcoholdependence.com", "cpdrjournal.com", 
+                "gastrojournal.org", "gallerypress.com", "journals.uic.edu", "asm.org", "apa.org", 
+                "ifreevampire.com", "microbialcellfactories.com", "saudiophthaljournal.com", 
+                "usenix.org", "ahajournals.org", "andjrnl.org", "francoangeli.it", "psyn-journal.com", 
+                "medscape.com", "cancergeneticsjournal.org", "publish.csiro.au", "cysticfibrosisjournal.com", 
+                "ajronline.org", "librosdeginecologia.com", "jebdp.com", "cabdirect.org", 
+                "journalofinfection.com", "casesjournal.com", "sleepmedicinenetwork.com", "epires-journal.com", 
+                "scirp.org", "euroasiapub.org", "impa.br", "els.net", "onepetro.org", "scielosp.org",
+                "ebooks-share.net", "final4ever.com", "magonlinelibrary.com", "sgmjournals.org", "laindonhistory.org.uk", 
+                "pubzone.org", "buffalolib.org", "doiserbia.nb.rs", "e-booksdirectory.com", "taiwanmooc.org", 
+                "ournewhaven.org.uk", "contraceptionjournal.org", "biochemsoctrans.org", "drugsandalcohol.ie", 
+                "scitation.aip.org", "aip.org", "scitation.org"
         );
 
         List<String> rateLimitDomain = null;
