@@ -406,8 +406,9 @@ public class MAGPDFDownloader {
             // Had better forbid these sites, but there are too many.
 //            LOGGER.log(Level.SEVERE, "SocketTimeoutException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (IOException e) {   
-            // openConnection() failed. Caught timeout, mostly unknown host.
-            LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
+            // openConnection() failed. After catching timeout, mostly unknown host and connection refuse. 
+            // Check partially already. No more log.
+//            LOGGER.log(Level.SEVERE, "IOException in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url);
         } catch (Exception e) {   
             // other exception
             LOGGER.log(Level.SEVERE, "Exception (Other) in downloadFile: " + e.toString() + "\n" + "\t" + "Paper ID: " + id + ". URL: " + url, e);
@@ -593,7 +594,7 @@ public class MAGPDFDownloader {
                 "lib.meiji.ac.jp", 
                 // NII lib subscription.
                 // https://staff.nii.ac.jp/library/OLJ_en/
-                "acm.org", "ieee.org", "springer.com", 
+                "acm.org", "ieee.org", "ieeecomputersociety.org", "springer.com", "springerlink.com", 
                 "aps.org", "bioone.org", "cambridge.org", 
                 "informaworld.com", "nowpublishers.com", "igi-global.com", 
                 "iop.org", "jstor.org", "maruzen.co.jp", "morganclaypool.com", 
@@ -616,7 +617,7 @@ public class MAGPDFDownloader {
                 // Sokendai lib subscription.
                 // http://www.lib.soken.ac.jp/ej/ejlist.html
                 "bioone.org", "nature.com", "natureasia.com", "sagepub.com", "sciencedirect.com", "scirus.com", "wiley.com", 
-                "jstor.org", "oxfordjournals.org", "scienceonline.org", "sciencemag.jp", "springer.de", 
+                "jstor.org", "oxfordjournals.org", "sciencemag.jp", "scienceonline.org", "springer.de", 
                 "scopus.com", 
                 // Most journals and databases in the world (not repeated sites in subscription list above).
                 // http://sfx2.usaco.co.jp/rois/az?set_first_page=1&param_lang_save=eng&param_perform_value=locate
