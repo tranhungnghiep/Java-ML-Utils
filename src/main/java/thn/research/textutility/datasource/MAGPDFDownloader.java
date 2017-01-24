@@ -603,7 +603,7 @@ public class MAGPDFDownloader {
                 "elsevier.com", "sciencedirect.com", "cell.com", "elsevierhealth.com", 
                 "siam.org", "wiley.com", 
                 "ipsj.ixsq.nii.ac.jp", 
-                // NII lib database subscription.
+                // NII lib info database subscription.
                 // https://staff.nii.ac.jp/library/db_en/
                 "thomsonreuters.com", "webofknowledge.com", "jdream3.com", "ams.org", 
                 "proquest.com", "scopus.com", "stneasy-japan.cas.org", "nikkei.co.jp", 
@@ -676,7 +676,7 @@ public class MAGPDFDownloader {
                 "cancerletters.info", "burnsjournal.com", "redjournal.org", "whijournal.com", "anaesthesiajournal.co.uk", 
                 "sleep-journal.com", "celltherapyjournal.org", "drupjournal.com", "surgjournal.com", 
                 "annemergmed.com", "journal-surgery.net", "lungcancerjournal.info", "journalofsurgicalresearch.com", 
-                "jacr.org", "ejinme.com", "jad-journal.com", "e-jds.com", "theclinics.com", "ajodo.org", "ejves.com", "ajodo.org", 
+                "jacr.org", "ejinme.com", "jad-journal.com", "e-jds.com", "theclinics.com", "ajodo.org", "ejves.com", 
                 // 429.
                 "amsciepub.com", "carrots-download.com", "phthiraptera.info", "myspecies.info", 
                 "torrentsmafi.net", "torrentmafia.biz", "torfinder.net", "pirateswrc.com", 
